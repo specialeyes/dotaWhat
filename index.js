@@ -7,22 +7,57 @@ var interaction = {
 
 	$('.nav-sidebar li').click(function(e) {
 		var $this = $(this);
-		$this.siblings(".active").children("a").css("color", "#2A6496");
-		$this.siblings(".active").children("a").css("background-color", "");  
-		$this.siblings(".active").children("a").hover(function() {$(this).css("background-color", "")}, function(){$(this).css("background-color", "")}); 
-		$this.siblings(".active").removeClass("active");
-  
+    var $curActive = $this.siblings(".active");
+    var curActiveInd = $curActive.index();
+    var desiredInd = $this.index();
+
+    /**
+     * CSS Changes
+     */
+		$curActive.children().css("color", "#2A6496")
+      .css("background-color", "")
+      .hover(function() {
+        $(this).css("background-color", "")},
+      function() {
+        $(this).css("background-color", "")});
+    $curActive.removeClass("active");
+
 		$this.addClass('active');
-		$this.children("a").css("color", "#fff");
-		$this.children("a").css("background-color", "#428bca");
-		$this.children("a").hover(function() {$(this).css("background-color", "#23537D")}, function(){$(this).css("background-color", "#428bca")}); 
-});
-  
-/**	$(.nav-sidebar).children().click(function(this) {
-		this.parent().siblings(".active").removeClass("active");
-		this.addClass("active");
-		});
-  */
+		$this.children().css("color", "#fff")
+      .css("background-color", "#428bca")
+      .hover(function() {
+        $(this).css("background-color", "#23537D")},
+      function(){
+        $(this).css("background-color", "#428bca")});
+
+    /**
+     * Changing Viz
+     */
+    switch (curActiveInd + 1) {
+      case 1:
+        $("#viz1").hide();
+        break;
+      case 2:
+        $("#viz2").hide();
+        break;
+      case 3:
+        $("#viz3").hide();
+        break;
+    }
+    switch (desiredInd + 1) {
+      case 1:
+        $("#viz1").removeClass("hide").show();
+        break;
+      case 2:
+        $("#viz2").removeClass("hide").show();
+        break;
+      case 3:
+        $("#viz3").removeClass("hide").show();
+        break;
+    }
+  });
+
+
   },
   vizTitles: {
     titles: ["Parallel Coordinates", "Second Viz", "Third Viz"],
