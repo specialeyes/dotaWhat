@@ -4,16 +4,21 @@
 var interaction = {
 
   init: function() {
-
+  	/**
+  	 * Vis 3 Code 
+  	 */
+  	var margin = {top: 20, right: 0, bottom: 30, left: 0},
+    width = $('#viz4').width() - margin.left - margin.right,
+    height = $('#viz4').height() - margin.top - margin.bottom;
+    
+    
+  	/**
 	$('.nav-sidebar li').click(function(e) {
 		var $this = $(this);
     var $curActive = $this.siblings(".active");
     var curActiveInd = $curActive.index();
     var desiredInd = $this.index();
 
-    /**
-     * CSS Changes
-     */
 		$curActive.children().css("color", "#2A6496")
       .css("background-color", "")
       .hover(function() {
@@ -30,9 +35,7 @@ var interaction = {
       function(){
         $(this).css("background-color", "#428bca")});
 
-    /**
-     * Changing Viz
-     */
+
     switch (curActiveInd + 1) {
       case 1:
         $("#viz1").hide();
@@ -57,11 +60,12 @@ var interaction = {
     }
   });
 
-
+*/
   },
   vizTitles: {
     titles: ["Parallel Coordinates", "Second Viz", "Third Viz"],
     subtitles: ["So cool", "what", "idk"]
+
   }
 
 };
