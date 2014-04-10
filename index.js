@@ -74,8 +74,7 @@ var interaction = {
     height = $('#viz2').height() - margin.top - margin.bottom,
     radius = Math.min(width, height)/2;
         
-    var color = d3.scale.ordinal()
-      .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+    var color = d3.scale.category20c();
     
     var arc = d3.svg.arc()
       .outerRadius(radius - 10)
@@ -89,20 +88,37 @@ var interaction = {
         /* use nest() by hero to arrange each small multiple pie chart  */
     
     d3.json("sample.json", function(data) {
-      var heroes = d3.next()
+      var heroes = d3.nest()
         .key(function(d) {return d.hero_id /* Each hero or player identification. player_id */})
         .entries(data);
     
       var svg = d3.select("#vis2graph").selectAll("svg")
        .data(heroes)
        .enter().append("svg")
+       .style("display", "inline-block")
        .attr("width", width + margin.left + margin.right)
        .attr("height", height + margin.top + margin.bottom)
       .append("g")
        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
     
+        var g = svg.selectAll("g")
+            .data(function (d) {return  pie(d. % item_win_rate)  ; })
+            .enter().append("svg:g");
         
-        });
+        g.append("svg:path")
+            .attr("d", arc )
+            .style("fill", function(d) { return color(d.data.item_ID) ;})
+            .append("svg:title")
+            .text(function(d){return d.data.item_id + ": " + d.data.item_win_rate});
+        
+        
+    
+    
+    
+    
+    
+    
+    });
 
 
 
@@ -191,4 +207,5 @@ var interaction = {
 
 };
 $(document).ready(interaction.init);
+$(document).ready(interaction.viz2);
 $(document).ready(interaction.viz3);
