@@ -63,17 +63,17 @@ var interaction = {
     subtitles: ["So cool", "what", "idk"]
 
   },
-    viz1: {},
-    viz2: {
+    viz1: function() {},
+    viz2: function() {
     /**
     * Vis 2 Code
     */
     
-    var margin = {top: 20, right: 0, bottom: 30, left: 0},
-    width = $('#viz2').width() - margin.left - margin.right,
-    height = $('#viz2').height() - margin.top - margin.bottom,
-    radius = Math.min(width, height)/2;
-        
+        var margin = {top: 20, right: 0, bottom: 30, left: 0};
+    var width = $('#viz2').width() - margin.left - margin.right;
+    var height = $('#viz2').height() - margin.top - margin.bottom;
+    var radius = Math.min(width, height)/2;
+    
     var color = d3.scale.category20c();
     
     var arc = d3.svg.arc()
@@ -102,7 +102,7 @@ var interaction = {
        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
     
         var g = svg.selectAll("g")
-            .data(function (d) {return  pie(d. % item_win_rate)  ; })
+            .data(function (d) {return  /* pie(d. % item_win_rate)  */ ; })
             .enter().append("svg:g");
         
         g.append("svg:path")
@@ -130,15 +130,21 @@ var interaction = {
 
         
     },
-    viz3: {
+    viz3: function() {
     /**
   	 * Vis 3 Code 
   	 */
   	var margin = {top: 20, right: 0, bottom: 30, left: 0},
     width = $('#viz3').width() - margin.left - margin.right,
     height = $('#viz3').height() - margin.top - margin.bottom;
+        
+        width = 400;
+        height = 300;
     
       
+   //     $('#debug').text = "Vis 3 Width: " + width + " Height: " + height;
+        $('#debug').text("Vis 3 Width: " + width + " Height: " + height);
+        console.log("Blah");
     var x = d3.time.scale()
     .range([0, width]);
 
@@ -155,7 +161,7 @@ var interaction = {
 
     var line = d3.svg.line()
     .x(function(d) { return x(d.date); })
-    .y(function(d) { return y(d.close); });
+    .y(function(d) { return y(d.win_rate); });
     
     var svg = d3.select("#viz3graph").append("svg")
     .attr("width", width + margin.left + margin.right)
@@ -164,12 +170,11 @@ var interaction = {
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");  
       
       
-      d3.json("sample.json", function(json){
+      d3.json("sample.json", function(data){
         /**
         * pull out date, champion name, win rate?
         */
         
-      });
       
       x.domain(d3.extent(data, function(d) { return /* time? d.date  */}));
       y.domain(d3.extent(data, function(d) { return /*  win rate? d.winrate */}));
@@ -180,11 +185,12 @@ var interaction = {
       .attr("transform", "translate(0," + height + ")")
       .call(xAxis)
     .append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("y", 6)
-      .attr("dy", ".71em")
+      .attr("transform", "rotate(0)")
+      .attr("y", 5)
+      .attr("dy", "20px")
+      .attr("dx", "80px")
       .style("text-anchor", "end")
-      .text("Axis text");
+      .text("X Axis text");
 
     svg.append("g")
       .attr("class", "y axis")
@@ -202,10 +208,11 @@ var interaction = {
         .attr("d",line);
       
     
-    }
+    });
+      
         
+    }
+    };
 
-};
 $(document).ready(interaction.init);
-$(document).ready(interaction.viz2);
 $(document).ready(interaction.viz3);
