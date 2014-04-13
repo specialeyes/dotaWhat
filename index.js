@@ -74,6 +74,9 @@ var interaction = {
     var height = $('#viz2').height() - margin.top - margin.bottom;
     var radius = Math.min(width, height)/2;
     
+        width= 400;
+        height = 300;
+        
     var color = d3.scale.category20c();
     
     var arc = d3.svg.arc()
@@ -194,6 +197,7 @@ var interaction = {
 
     svg.append("g")
       .attr("class", "y axis")
+      .attr("transform","translate(6, 0)")
       .call(yAxis)
     .append("text")
       .attr("transform", "rotate(-90)")
@@ -215,4 +219,5 @@ var interaction = {
     };
 
 $(document).ready(interaction.init);
+$(document).ready(interaction.viz2);
 $(document).ready(interaction.viz3);
