@@ -1,0 +1,32 @@
+svg {
+    font: 10px sans-serif;
+}
+
+.parallaxBackground path {
+    fill: none;
+    stroke: #ccc;
+    stroke-opaity: .4;
+    shape-rendering: crispEdges;
+}
+
+.parallaxForeground path {
+    fill: none;
+    stroke: steelblue;
+    stroke-opacity: .7;
+}
+
+.parallaxBrush .parallaxExtent {
+    fill-opacity: .3;
+    stroke: #fff;
+    shape-rendering: crispEdges;
+}
+
+.parallaxAxis line, .parallaxAxis path {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+
+.parallaxAxis text {
+    text-shadow: 0 1px 0 #fff;
+}

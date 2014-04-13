@@ -63,7 +63,62 @@ var interaction = {
     subtitles: ["So cool", "what", "idk"]
 
   },
-    viz1: function() {},
+    viz1: function() {
+      // Document Elemenets
+      var vizElement = $('#viz1');
+      var margin = {top: 30, right: 10, bottom: 10, left: 10},
+        w = vizElement.width() - margin.right - margin.left,
+        h = vizElement.height() - margin.top - margin.right;
+
+      // Defining where vertical axes are going to be
+      var x = d3.scale.ordinal().rangePoints([0, w],.5),
+        y = {};
+
+      // Instantiating variables
+      var line = d3.svg.line(),
+        axis = d3.svg.axis().orient("left"),
+        background,
+        foreground;
+
+      // Appending SVG drawing element
+      var svg = d3.select("body").append("svg")
+        .attr("width", w + margin.left + margin.right)
+        .attr("height", h + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      // Useful global (w/i viz#1) variables
+      var curMatch
+        allPlayers = [];
+
+      // Domain function defined
+      var domainFn = function(players, property) {
+        var res = d3.extent(players, function(player) {
+          // Strik k character for gold and HD values
+          if (["gold", "HD"].indexOf(property) != -1) {
+            return +(player[property].substring(0, player[property].length - 1));
+          } else {
+            return +player[property];
+          }
+        });
+        console.log(res);
+        return res;
+      };
+
+      // Loading data
+      d3.json("sample.json", function (allMatches) {
+        curMatch = allMatches[1];
+        allPlayers = allPlayers.concat(curMatch["radiant"])
+          .concat(curMatch["dire"]);
+
+        // Set domains (based on the data) for all the vertical axes
+        x.domain(dimensions = d3.keys(allPlayers[0]).filter(function(d) {
+          return (["player_id", "hero_id", "items"].indexOf(d) == -1) &&
+            (y[d] == d3.scale.linear().domain(domainFn.call(null, allPlayers, d)
+            ));
+        }));
+      });
+    },
     viz2: function() {
     /**
     * Vis 2 Code
@@ -218,6 +273,10 @@ var interaction = {
     }
     };
 
-$(document).ready(interaction.init);
-$(document).ready(interaction.viz2);
-$(document).ready(interaction.viz3);
+$(document).ready(function() {
+  interaction.init();
+  interaction.viz1();
+  interaction.viz2();
+  interaction.viz3();
+});
+
