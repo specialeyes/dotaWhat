@@ -66,8 +66,8 @@ var interaction = {
     viz1: function() {
       // Document Elemenets
       var vizElement = $('#viz1');
-      var margin = {top: 30, right: 10, bottom: 10, left: 10},
-        w = 900 - margin.right - margin.left,
+      var margin = {top: 30, right: 25, bottom: 30, left: 25},
+        w = 1150 - margin.right - margin.left,
         h = 500 - margin.top - margin.right;
 
       // Defining where vertical axes are going to be
@@ -78,7 +78,8 @@ var interaction = {
       var line = d3.svg.line(),
         axis = d3.svg.axis().orient("left"),
         background,
-        foreground;
+        foreground,
+        dimensions;
 
       // Appending SVG drawing element
       var svg = d3.select("#viz1graph").append("svg")
@@ -115,10 +116,11 @@ var interaction = {
         });
 
         // Set domains (based on the data) for all the vertical axes
-        x.domain(dimensions = d3.keys(allPlayers[0]).filter(function(property) {
+        dimensions = d3.keys(allPlayers[0]).filter(function(property) {
           return ((["player_id", "hero_id", "items"].indexOf(property) == -1) &&
             (y[property] = d3.scale.linear().domain(domainFn.call(null, allPlayers, property)).range([h,0])));
-        }));
+        });
+        x.domain(dimensions);
 
         // Add grey lines for context
         background = svg.append("g")
@@ -126,36 +128,40 @@ var interaction = {
           .selectAll("path")
           .data(allPlayers)
           .enter().append("path")
-          .attr("d", function(d) {
-            return line(dimensions.map(function(p) {
-              return [x(p), y[p](d[p])];
-            }));
-          });
+          .attr("d", path);
 
         foreground = svg.append("g")
           .attr("class", "parallelForeground")
           .selectAll("path")
           .data(allPlayers)
           .enter().append("path")
-          .attr("d", function(d) {
-            return line(dimensions.map(function(p) {
-              return [x(p), y[p](d[p])];
-            }));
-          });
+          .attr("d", path);
+
+        // Group element for each dimension/vertical axis
+        var g = svg.selectAll(".dimension")
+          .data(dimensions)
+          .enter().append("g")
+          .attr("class", "dimension")
+          .attr("transform", function(d) {return "translate(" + x(d) + ")"; });
+
+        // Add axes and titles to the group elements
+        g.append("g")
+          .attr("class", "parallelAxis")
+          .each(function(d) { d3.select(this).call(axis.scale(y[d])); })
+          .append("text")
+          .attr("text-anchor", "middle")
+          .attr("y", -9)
+          .text(String);
 
       });
 
       function path(d) {
-//        console.log(dimensions);
-//        console.log(d);
         return line(dimensions.map(function(p) {
-//          console.log(p);
-//          console.log(x);
-//          console.log(y);
           console.log([x(p), y[p](d[p])]);
           return [x(p), y[p](d[p])];
         }));
       }
+
     },
     viz2: function() {
     /**

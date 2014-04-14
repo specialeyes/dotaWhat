@@ -21,7 +21,7 @@ svg {
     shape-rendering: crispEdges;
 }
 
-.parallelAxis line, .parallaxAxis path {
+.parallelAxis line, .parallelAxis path {
     fill: none;
     stroke: #000;
     shape-rendering: crispEdges;
