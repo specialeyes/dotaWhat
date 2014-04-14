@@ -124,32 +124,39 @@ var interaction = {
     * Vis 2 Code
     */
     
+        // Document formating
         var margin = {top: 20, right: 0, bottom: 30, left: 0};
-    var width = $('#viz2').width() - margin.left - margin.right;
-    var height = $('#viz2').height() - margin.top - margin.bottom;
+    // var width = $('#viz2').width() - margin.left - margin.right;
+    // var height = $('#viz2').height() - margin.top - margin.bottom;
     var radius = Math.min(width, height)/2;
     
-        width= 400;
-        height = 300;
-        
+    var width= 400;
+    var height = 300;
+    
+        // Pie slice colors
     var color = d3.scale.category20c();
     
+        // Radius of the pies
     var arc = d3.svg.arc()
       .outerRadius(radius - 10)
       .innerRadius(0);
-    
+        
+    // What the pies represent.
     var pie = d3.layout.pie()
       .sort(null)
       .value(function(d) { return d.winrate; }); /* what each slice represents */
     
     
         /* use nest() by hero to arrange each small multiple pie chart  */
-    
+    // Load data
     d3.json("sample.json", function(data) {
-      var heroes = d3.nest()
+      
+        // Each pie for every hero id
+        var heroes = d3.nest()
         .key(function(d) {return d.hero_id /* Each hero or player identification. player_id */})
         .entries(data);
     
+        // add them to svg element. Format display
       var svg = d3.select("#vis2graph").selectAll("svg")
        .data(heroes)
        .enter().append("svg")
@@ -159,10 +166,12 @@ var interaction = {
       .append("g")
        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
     
+        // Create pie
         var g = svg.selectAll("g")
             .data(function (d) {return  /* pie(d. % item_win_rate)  */ ; })
             .enter().append("svg:g");
         
+        // Fill each pie based on item id, add on hover label for each pie slice.
         g.append("svg:path")
             .attr("d", arc )
             .style("fill", function(d) { return color(d.data.item_ID) ;})
@@ -193,16 +202,17 @@ var interaction = {
   	 * Vis 3 Code 
   	 */
   	var margin = {top: 20, right: 0, bottom: 30, left: 0},
-    width = $('#viz3').width() - margin.left - margin.right,
-    height = $('#viz3').height() - margin.top - margin.bottom;
+    // width = $('#viz3').width() - margin.left - margin.right,
+    // height = $('#viz3').height() - margin.top - margin.bottom;
         
-        width = 400;
-        height = 300;
+    var width = 400;
+    var height = 300;
     
       
    //     $('#debug').text = "Vis 3 Width: " + width + " Height: " + height;
-        $('#debug').text("Vis 3 Width: " + width + " Height: " + height);
-        console.log("Blah");
+    $('#debug').text("Vis 3 Width: " + width + " Height: " + height);
+        
+    // Display formatting    
     var x = d3.time.scale()
     .range([0, width]);
 
@@ -217,27 +227,31 @@ var interaction = {
     .scale(y)
     .orient("left");
 
+        
+    // The line and what each axis represent    
     var line = d3.svg.line()
     .x(function(d) { return x(d.date); })
     .y(function(d) { return y(d.win_rate); });
     
+        // Add and format svg
     var svg = d3.select("#viz3graph").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");  
       
-      
+        
+    // Load data  
       d3.json("sample.json", function(data){
         /**
         * pull out date, champion name, win rate?
         */
         
-      
+      // Domain for each axis. 
       x.domain(d3.extent(data, function(d) { return /* time? d.date  */}));
       y.domain(d3.extent(data, function(d) { return /*  win rate? d.winrate */}));
       
-      
+      // Display x Axis and format
     svg.append("g")
       .attr("class", "x axis")
       .attr("transform", "translate(0," + height + ")")
@@ -250,6 +264,7 @@ var interaction = {
       .style("text-anchor", "end")
       .text("X Axis text");
 
+          // Display y Axis and format
     svg.append("g")
       .attr("class", "y axis")
       .attr("transform","translate(6, 0)")
@@ -261,6 +276,7 @@ var interaction = {
       .style("text-anchor", "end")
       .text("Axis text");  
       
+          // Display each line in the graph
       svg.append("path")
         .datum(data)
         .attr("class","line")
