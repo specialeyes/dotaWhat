@@ -64,8 +64,7 @@ var interaction = {
 
   },
     viz1: function() {
-      // Document Elemenets
-      var vizElement = $('#viz1');
+      // Document Elements
       var margin = {top: 30, right: 25, bottom: 30, left: 25},
         w = 1150 - margin.right - margin.left,
         h = 500 - margin.top - margin.right;
@@ -115,6 +114,13 @@ var interaction = {
           d.HD = +stripK(d.HD);
         });
 
+        // Show match # and winner
+        var $vizTitle = $("#viz1").find("h2").text("Match " + curMatch["match_id"]+ " ");
+        $('<small>').text(function() {
+          if (+curMatch["winner"] === 0) return "Radiant Victory";
+          else return "Dire Victory";
+        }).appendTo($vizTitle);
+
         // Set domains (based on the data) for all the vertical axes
         dimensions = d3.keys(allPlayers[0]).filter(function(property) {
           return ((["player_id", "hero_id", "items"].indexOf(property) == -1) &&
@@ -157,7 +163,6 @@ var interaction = {
 
       function path(d) {
         return line(dimensions.map(function(p) {
-          console.log([x(p), y[p](d[p])]);
           return [x(p), y[p](d[p])];
         }));
       }
