@@ -141,6 +141,10 @@ var interaction = {
           .selectAll("path")
           .data(allPlayers)
           .enter().append("path")
+          .attr("stroke", function(d, i) {
+            if (i < 5) return "#61A013";
+            else return "#D6231C";
+          })
           .attr("d", path);
 
         // Group element for each dimension/vertical axis

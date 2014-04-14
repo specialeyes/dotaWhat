@@ -11,8 +11,19 @@ svg {
 
 .parallelForeground path {
     fill: none;
-    stroke: steelblue;
     stroke-opacity: .7;
+}
+
+.dire path {
+    fill: none;
+    stroke-opacity: .7;
+    stroke: #D6231C;
+}
+
+.radiant path {
+    fill: none;
+    stroke-opacity: .7;
+    stroke: #61A013;
 }
 
 .parallelBrush .parallelExtent {
