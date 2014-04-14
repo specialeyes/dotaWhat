@@ -2,31 +2,31 @@ svg {
     font: 10px sans-serif;
 }
 
-.parallaxBackground path {
+.parallelBackground path {
     fill: none;
     stroke: #ccc;
-    stroke-opaity: .4;
+    stroke-opacity: .4;
     shape-rendering: crispEdges;
 }
 
-.parallaxForeground path {
+.parallelForeground path {
     fill: none;
     stroke: steelblue;
     stroke-opacity: .7;
 }
 
-.parallaxBrush .parallaxExtent {
+.parallelBrush .parallelExtent {
     fill-opacity: .3;
     stroke: #fff;
     shape-rendering: crispEdges;
 }
 
-.parallaxAxis line, .parallaxAxis path {
+.parallelAxis line, .parallaxAxis path {
     fill: none;
     stroke: #000;
     shape-rendering: crispEdges;
 }
 
-.parallaxAxis text {
+.parallelAxis text {
     text-shadow: 0 1px 0 #fff;
 }

@@ -67,8 +67,8 @@ var interaction = {
       // Document Elemenets
       var vizElement = $('#viz1');
       var margin = {top: 30, right: 10, bottom: 10, left: 10},
-        w = vizElement.width() - margin.right - margin.left,
-        h = vizElement.height() - margin.top - margin.right;
+        w = 900 - margin.right - margin.left,
+        h = 500 - margin.top - margin.right;
 
       // Defining where vertical axes are going to be
       var x = d3.scale.ordinal().rangePoints([0, w],.5),
@@ -81,43 +81,81 @@ var interaction = {
         foreground;
 
       // Appending SVG drawing element
-      var svg = d3.select("body").append("svg")
+      var svg = d3.select("#viz1graph").append("svg")
         .attr("width", w + margin.left + margin.right)
         .attr("height", h + margin.top + margin.bottom)
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
       // Useful global (w/i viz#1) variables
-      var curMatch
+      var curMatch,
         allPlayers = [];
 
       // Domain function defined
       var domainFn = function(players, property) {
-        var res = d3.extent(players, function(player) {
-          // Strik k character for gold and HD values
-          if (["gold", "HD"].indexOf(property) != -1) {
-            return +(player[property].substring(0, player[property].length - 1));
-          } else {
-            return +player[property];
-          }
+        return d3.extent(players, function(player) {
+//          console.log(player[property]);
+          return player[property];
         });
-        console.log(res);
-        return res;
       };
+
+      // Helper function to strip K from gold and HD values
+      function stripK(value) {
+        return value.substring(0, value.length - 1);
+      }
 
       // Loading data
       d3.json("sample.json", function (allMatches) {
         curMatch = allMatches[1];
         allPlayers = allPlayers.concat(curMatch["radiant"])
           .concat(curMatch["dire"]);
+        allPlayers.forEach(function(d) {
+          d.gold = +stripK(d.gold);
+          d.HD = +stripK(d.HD);
+        });
 
         // Set domains (based on the data) for all the vertical axes
-        x.domain(dimensions = d3.keys(allPlayers[0]).filter(function(d) {
-          return (["player_id", "hero_id", "items"].indexOf(d) == -1) &&
-            (y[d] == d3.scale.linear().domain(domainFn.call(null, allPlayers, d)
-            ));
+        x.domain(dimensions = d3.keys(allPlayers[0]).filter(function(property) {
+          return ((["player_id", "hero_id", "items"].indexOf(property) == -1) &&
+            (y[property] = d3.scale.linear().domain(domainFn.call(null, allPlayers, property)).range([h,0])));
         }));
+
+        // Add grey lines for context
+        background = svg.append("g")
+          .attr("class", "parallelBackground")
+          .selectAll("path")
+          .data(allPlayers)
+          .enter().append("path")
+          .attr("d", function(d) {
+            return line(dimensions.map(function(p) {
+              return [x(p), y[p](d[p])];
+            }));
+          });
+
+        foreground = svg.append("g")
+          .attr("class", "parallelForeground")
+          .selectAll("path")
+          .data(allPlayers)
+          .enter().append("path")
+          .attr("d", function(d) {
+            return line(dimensions.map(function(p) {
+              return [x(p), y[p](d[p])];
+            }));
+          });
+
       });
+
+      function path(d) {
+//        console.log(dimensions);
+//        console.log(d);
+        return line(dimensions.map(function(p) {
+//          console.log(p);
+//          console.log(x);
+//          console.log(y);
+          console.log([x(p), y[p](d[p])]);
+          return [x(p), y[p](d[p])];
+        }));
+      }
     },
     viz2: function() {
     /**
@@ -201,7 +239,7 @@ var interaction = {
     /**
   	 * Vis 3 Code 
   	 */
-  	var margin = {top: 20, right: 0, bottom: 30, left: 0},
+  	var margin = {top: 20, right: 0, bottom: 30, left: 0};
     // width = $('#viz3').width() - margin.left - margin.right,
     // height = $('#viz3').height() - margin.top - margin.bottom;
         
@@ -292,7 +330,7 @@ var interaction = {
 $(document).ready(function() {
   interaction.init();
   interaction.viz1();
-  interaction.viz2();
-  interaction.viz3();
+//  interaction.viz2();
+//  interaction.viz3();
 });
 
