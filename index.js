@@ -115,11 +115,15 @@ var interaction = {
         });
 
         // Show match # and winner
-        var $vizTitle = $("#viz1").find("h2").text("Match " + curMatch["match_id"]+ " ");
+        var $vizTitle = $("#viz1").find("h2").text("Match #" + curMatch["match_id"]+ " ");
         $('<small>').text(function() {
-          if (+curMatch["winner"] === 0) return "Radiant Victory";
-          else return "Dire Victory";
-        }).appendTo($vizTitle);
+            if (+curMatch["winner"] === 0) return "Radiant Victory";
+            else return "Dire Victory";
+          })
+          .css("color", function() {
+            if (+curMatch["winner"] === 0) return "#61A013";
+            else return "#D6231C";
+          }).appendTo($vizTitle);
 
         // Set domains (based on the data) for all the vertical axes
         dimensions = d3.keys(allPlayers[0]).filter(function(property) {
