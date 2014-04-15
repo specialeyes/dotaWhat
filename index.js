@@ -105,29 +105,23 @@ var interaction = {
       }
 
       // Loading data
-      d3.json("sample.json", function (allMatches) {
-        curMatch = allMatches[1];
-        allPlayers = allPlayers.concat(curMatch["radiant"])
-          .concat(curMatch["dire"]);
-        allPlayers.forEach(function(d) {
-          d.gold = +stripK(d.gold);
-          d.HD = +stripK(d.HD);
-        });
+      d3.json("rankedgame.json", function (curMatch) {
+        allPlayers = curMatch["players"];
 
         // Show match # and winner
-        var $vizTitle = $("#viz1").find("h2").text("Match #" + curMatch["match_id"]+ " ");
+        var $vizTitle = $("#viz1").find("h2").text("Match #" + curMatch["mID"]+ " ");
         $('<small>').text(function() {
-            if (+curMatch["winner"] === 0) return "Radiant Victory";
+            if (curMatch["radiantVictory"]) return "Radiant Victory";
             else return "Dire Victory";
           })
           .css("color", function() {
-            if (+curMatch["winner"] === 0) return "#61A013";
+            if (curMatch["radiantVictory"]) return "#61A013";
             else return "#D6231C";
           }).appendTo($vizTitle);
 
         // Set domains (based on the data) for all the vertical axes
         dimensions = d3.keys(allPlayers[0]).filter(function(property) {
-          return ((["player_id", "hero_id", "items"].indexOf(property) == -1) &&
+          return ((["player", "pID", "heroName", "radiant", "itemBuild"].indexOf(property) == -1) &&
             (y[property] = d3.scale.linear().domain(domainFn.call(null, allPlayers, property)).range([h,0])));
         });
         x.domain(dimensions);
@@ -146,7 +140,7 @@ var interaction = {
           .data(allPlayers)
           .enter().append("path")
           .attr("stroke", function(d, i) {
-            if (i < 5) return "#61A013";
+            if (allPlayers[i].radiant) return "#61A013";
             else return "#D6231C";
           })
           .attr("d", path);
