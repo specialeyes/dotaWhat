@@ -26,7 +26,7 @@ svg {
     stroke: #61A013;
 }
 
-.parallelBrush .parallelExtent {
+.parallelBrush .extent {
     fill-opacity: .3;
     stroke: #fff;
     shape-rendering: crispEdges;
