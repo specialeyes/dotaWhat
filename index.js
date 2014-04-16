@@ -1,11 +1,40 @@
 /**
  * Created by Jennifer on 4/4/14.
  */
+var DDgroupcount = 1;
+
+/* Creates the Drop downs for viz3 that hold the heroes' names and IDs. Creates by groups of 5 */
+function generateHeroDropDown() {
+    var HeroFile='heroes.csv';
+    var DDL = $("#groupSelectContainer");
+    var suplist;
+    var cols;
+    $.get( HeroFile, function(data) {
+        suplist = data.split('\n'),
+            cols;
+        DDL.append("<div id='group" + DDgroupcount + "' class='heroTeam'>Team " + DDgroupcount +  "<br/></div>");
+        
+        for(var j= 1; j <= 5; j++) {
+            $("#group" + DDgroupcount).append("<select id='heroDD" + DDgroupcount + j + "' class='heroDropDown'></select>");
+            for (var i=0, len=suplist.length; i<len; i++) {
+                cols = suplist[i].split(','); //split the line in columns
+                                          //so  cols[0] -> ttt1111
+                                          //and cols[1] -> John Doe
+                                          //and so on for the rest lines
+                $("#heroDD" + DDgroupcount + j).append("<option value='" + cols[0] + "'>" + cols[1] + "</option>");
+            }
+        }
+        DDgroupcount++;
+    
+    });
+}
+
+
 var interaction = {
 
   init: function() {
 
-      
+      generateHeroDropDown();
       
   	
   	/**
@@ -364,6 +393,6 @@ $(document).ready(function() {
   interaction.init();
   interaction.viz1();
 //  interaction.viz2();
-//  interaction.viz3();
+ interaction.viz3();
 });
 
