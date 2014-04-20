@@ -100,7 +100,8 @@ var interaction = {
 
       // Defining where vertical axes are going to be
       var x = d3.scale.ordinal().rangePoints([0, w],.5),
-        y = {};
+        y = {},
+        dragging = {};
 
       // Instantiating variables
       var line = d3.svg.line(),
@@ -179,7 +180,32 @@ var interaction = {
           .data(dimensions)
           .enter().append("g")
           .attr("class", "dimension")
-          .attr("transform", function(d) {return "translate(" + x(d) + ")"; });
+          .attr("transform", function(d) {return "translate(" + x(d) + ")"; })
+          .call(d3.behavior.drag()
+            .on("dragstart", function(d) {
+              dragging[d] = this.__origin__ = x(d);
+              background.attr("visibility", "hidden");
+            })
+            .on("drag", function(d) {
+              dragging[d] = Math.min(w, Math.max(0, this.__origin__ += d3.event.dx));
+              foreground.attr("d", path);
+              dimensions.sort(function(a, b) { return position(a) - position(b); });
+              x.domain(dimensions);
+              g.attr("transform", function(d) { return "translate(" + position(d) + ")"; })
+            })
+            .on("dragend", function(d) {
+              delete this.__origin__;
+              delete dragging[d];
+              transition(d3.select(this)).attr("transform", "translate(" + x(d) + ")");
+              transition(foreground)
+                .attr("d", path);
+              background
+                .attr("d", path)
+                .transition()
+                .delay(500)
+                .duration(0)
+                .attr("visibility", null);
+            }));
 
         // Add axes and titles to the group elements
         g.append("g")
@@ -198,6 +224,17 @@ var interaction = {
           .attr("x", -8)
           .attr("width", 16);
       });
+
+      // Helper function for giving a position to resort based on order of axes
+      function position(d) {
+        var v = dragging[d];
+        return v == null ? x(d) : v;
+      }
+
+      // Transition function for dragging.
+      function transition(g) {
+        return g.transition().duration(500);
+      }
 
       // Returns path for given data point
       function path(d) {
