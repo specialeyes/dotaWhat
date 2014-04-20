@@ -92,15 +92,36 @@ var interaction = {
     subtitles: ["So cool", "what", "idk"]
 
   },
-  populateTable: function(players, hoverFn) {
+  populateTable: function(players, hoverFn, offHoverFn) {
     // Gets tbody within the table.
     var $bodySection = $("#matchTable").find("tbody"),
-      $curEntry;
+      $curEntry,
+      clickStates = [],
+      isClicked = false;
 
     // For each player, creates a new row in the table
     players.forEach(function(player) {
+      clickStates[player] = 0;
       $curEntry = $("<tr/>")
-        .hover(hoverFn.bind(null, player));
+        .hover(function() {
+          if (!isClicked) hoverFn.call(null, player);
+        }, function() {
+          if (!isClicked) offHoverFn.call(null);
+        })
+        .click(function() {
+          if (clickStates[player] === 0 && !isClicked) {
+            isClicked = true;
+            hoverFn.call(null, player);
+            clickStates[player] = 1;
+            $(this).addClass("tableClicked");
+          }
+          else {
+            isClicked = false;
+            clickStates[player] = 0;
+            offHoverFn.call(null);
+            $(this).removeClass("tableClicked");
+          }
+        });
 
       // For each property, retrieves the value for the player and appends it to the table-row element
       ["heroName", "player", "lvl", "kills", "deaths", "assists", "gold",
@@ -157,7 +178,7 @@ var interaction = {
       // Loading data
       d3.json("rankedgame.json", function (curMatch) {
         allPlayers = curMatch["players"];
-        interaction.populateTable(allPlayers, hoverFn);
+        interaction.populateTable(allPlayers, hoverFn, offHoverFn);
 
         // Show match # and winner
         var $vizTitle = $("#viz1").find("h2").text("Match #" + curMatch["mID"]+ " ");
@@ -283,6 +304,10 @@ var interaction = {
           }
           return "none";
         });
+      }
+
+      function offHoverFn() {
+        brush();
       }
 
     },
