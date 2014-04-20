@@ -369,10 +369,10 @@ var interaction = {
   	 * Vis 3 Code 
   	 */
   	var margin = {top: 20, right: 0, bottom: 30, left: 0};
-    // width = $('#viz3').width() - margin.left - margin.right,
+  //  var width = $('#viz3').width() - margin.left - margin.right;
     // height = $('#viz3').height() - margin.top - margin.bottom;
         
-    var width = 400;
+     var width = 400;
     var height = 300;
     
       
@@ -414,6 +414,10 @@ var interaction = {
         * pull out date, champion name, win rate?
         */
         
+          
+          
+          
+          
       // Domain for each axis. 
       x.domain(d3.extent(data, function(d) { return /* time? d.date  */}));
       y.domain(d3.extent(data, function(d) { return /*  win rate? d.winrate */}));
@@ -459,7 +463,7 @@ var interaction = {
 $(document).ready(function() {
   interaction.init();
   interaction.viz1();
-//  interaction.viz2();
+  interaction.viz2();
  interaction.viz3();
 });
 
