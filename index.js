@@ -92,6 +92,9 @@ var interaction = {
     subtitles: ["So cool", "what", "idk"]
 
   },
+  documentSizes: {
+    aspect: 1200/500
+  },
   populateTable: function(players, hoverFn, offHoverFn) {
     // Gets tbody within the table.
     var $bodySection = $("#matchTable").find("tbody"),
@@ -135,9 +138,10 @@ var interaction = {
   },
     viz1: function() {
       // Document Elements
+      var targetWidth = $("#viz1graph").width();
       var margin = {top: 30, right: 25, bottom: 30, left: 25},
-        w = 1150 - margin.right - margin.left,
-        h = 500 - margin.top - margin.right;
+        w = targetWidth - margin.right - margin.left,
+        h = (targetWidth / interaction.documentSizes.aspect) - margin.top - margin.right;
 
       // Defining where vertical axes are going to be
       var x = d3.scale.ordinal().rangePoints([0, w],.5),

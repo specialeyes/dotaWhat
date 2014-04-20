@@ -2,7 +2,7 @@
     position: fixed;
     top: 51px;
     bottom: 0;
-    left: 0;
+    right: 0;
     z-index: 1000;
     display: block;
     padding: 20px;
@@ -11,6 +11,18 @@
     background-color: #f5f5f5;
     border-right: 1px solid #eee;
 }
+
+.container-fluid > .sidebar {
+    position: absolute;
+    right: 20px;
+    top: 0;
+    width: 220px;
+}
+
+.container-fluid > .content {
+    margin-right: 240px;
+}
+
 .nav-sidebar {
     margin-right: -21px;
     margin-bottom: 20px;

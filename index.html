@@ -8,7 +8,23 @@
     <link href="main.css" rel="stylesheet">
 </head>
 <body>
-    <nav class="navbar navbar-inverse navbar-static-top" role="navigation">
+    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-2 sidebar"> Tools, Search Functionality Here
+                    <div id="vizTeams">
+                        <div id="vizTeamContainer">
+                            <div id="groupSelectContainer">
+
+                            </div>
+                        <div id="addGroupContainer">
+                        <button type="button" onclick="generateHeroDropDown()">Add Team</button>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="container-fluid">
             <div class="navbar-header">
                 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-nav">
@@ -30,23 +46,23 @@
     </nav>
 
     <div class="container-fluid">
-        <div id="viz1" >
-            <h2>Parallel Coordinates <small>Cool viz</small></h2>
-        </div>
         <div class="row">
-            <div class="col-md-offset-10 col-md-2 sidebar"> Tools, Search Functionality Here
-                <div id="vizTeams">
-                    <div id="vizTeamContainer">
-                        <div id="groupSelectContainer">
+            <!--<div class="col-md-offset-10 col-md-2 sidebar"> Tools, Search Functionality Here-->
+                <!--<div id="vizTeams">-->
+                    <!--<div id="vizTeamContainer">-->
+                        <!--<div id="groupSelectContainer">-->
 
-                        </div>
-                        <div id="addGroupContainer">
-                            <button type="button" onclick="generateHeroDropDown()">Add Team</button>
-                        </div>
-                    </div>
+                        <!--</div>-->
+                        <!--<div id="addGroupContainer">-->
+                            <!--<button type="button" onclick="generateHeroDropDown()">Add Team</button>-->
+                        <!--</div>-->
+                    <!--</div>-->
+                <!--</div>-->
+            <!--</div>-->
+            <div class="column col-md-10">
+                <div id="viz1" >
+                    <h2>Parallel Coordinates <small>Cool viz</small></h2>
                 </div>
-            </div>
-            <div class="column" class="col-md-10">
                 <div id="viz1graph"></div>
                 <div class="col-md-10">
                     <table id="matchTable" class="table table-hover">
@@ -88,13 +104,11 @@
                 </div>
 
             </div>
-
             </div>
            <div class="column">
             <div id="debug" class="col-md-5 col-md-offset-3 well">Text</div>
            </div>
         </div>
-    </div>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
