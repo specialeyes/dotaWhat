@@ -21,7 +21,7 @@ function generateHeroDropDown() {
                                           //so  cols[0] -> ttt1111
                                           //and cols[1] -> John Doe
                                           //and so on for the rest lines
-                $("#heroDD" + DDgroupcount + j).append("<option value='" + cols[0] + "'>" + cols[1] + "</option>");
+                $("#heroDD" + DDgroupcount + j).append("<option value='" + cols[0] + "'>" + cols[1] + "</option>").addClass("form-control");
             }
         }
         DDgroupcount++;
