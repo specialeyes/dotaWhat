@@ -92,6 +92,26 @@ var interaction = {
     subtitles: ["So cool", "what", "idk"]
 
   },
+  populateTable: function(players, hoverFn) {
+    // Gets tbody within the table.
+    var $bodySection = $("#matchTable").find("tbody"),
+      $curEntry;
+
+    // For each player, creates a new row in the table
+    players.forEach(function(player) {
+      $curEntry = $("<tr/>")
+        .hover(hoverFn.bind(null, player));
+
+      // For each property, retrieves the value for the player and appends it to the table-row element
+      ["heroName", "player", "lvl", "kills", "deaths", "assists", "gold",
+        "lastHits", "denies", "XPM", "GPM", "HD", "HH", "TD"].forEach(function (propertyName) {
+          $curEntry.append("<td>" + player[propertyName] + "</td>");
+        });
+
+      // Adds the row to the body of the table
+      $curEntry.appendTo($bodySection);
+    });
+  },
     viz1: function() {
       // Document Elements
       var margin = {top: 30, right: 25, bottom: 30, left: 25},
@@ -137,6 +157,7 @@ var interaction = {
       // Loading data
       d3.json("rankedgame.json", function (curMatch) {
         allPlayers = curMatch["players"];
+        interaction.populateTable(allPlayers, hoverFn);
 
         // Show match # and winner
         var $vizTitle = $("#viz1").find("h2").text("Match #" + curMatch["mID"]+ " ");
@@ -255,14 +276,23 @@ var interaction = {
         });
       }
 
+      function hoverFn(player) {
+        foreground.style("display", function(d) {
+          if (player["heroName"] === d["heroName"]) {
+            return null;
+          }
+          return "none";
+        });
+      }
+
     },
     viz2: function() {
     /**
     * Vis 2 Code
     */
     
-        // Document formating
-        var margin = {top: 20, right: 0, bottom: 30, left: 0};
+    // Document formatting
+    var margin = {top: 20, right: 0, bottom: 30, left: 0};
     // var width = $('#viz2').width() - margin.left - margin.right;
     // var height = $('#viz2').height() - margin.top - margin.bottom;
     var radius = Math.min(width, height)/2;
