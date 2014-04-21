@@ -11,7 +11,14 @@
     <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
         <div class="container-fluid">
             <div class="row">
-                <div class="col-md-2 sidebar"> Tools, Search Functionality Here
+                <div class="col-md-2 sidebar">
+                    <form role="form">
+                        <div class="form-group">
+                            <label for="matchID">Search by Match ID:</label>
+                            <input type="text" class="form-control" id="matchID" placeholder="Enter a Match Number">
+                        </div>
+                        <button type="submit" class="btn btn-default">Submit</button>
+                    </form>
                     <div id="vizTeams">
                         <div id="vizTeamContainer">
                             <div id="groupSelectContainer">
