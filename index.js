@@ -320,29 +320,36 @@ var interaction = {
     * Vis 2 Code
     */
     // Load data
-    d3.json("heroItemWR/sampleHeroItemMap.json", function(data) {
-       
+        var dataSet=[];
+    d3.json("heroItemWR/heroItemMap.json", function(data) {
+       dataSet=data;
     // Document formatting
-    var margin = {top: 20, right: 0, bottom: 30, left: 0};
+    var margin = {top: 50, right: 0, bottom: 30, left: 50};
     // var width = $('#viz2').width() - margin.left - margin.right;
     // var height = $('#viz2').height() - margin.top - margin.bottom;
-    var radius = Math.min(width, height)/2;
      
     var width= 400;
     var height = 300;
+    var radius = Math.min(width, height)/2;
     
         // Pie slice colors
     var color = d3.scale.category20c();
     
         // Radius of the pies
     var arc = d3.svg.arc()
-      .outerRadius(radius - 10)
+      .outerRadius(radius - 100)
       .innerRadius(0);
+        /*
+        var winrates =[];
+    data["abaddon"].forEach(function(entry){
+      winrates.push(entry.winrate);
+        });    
         
-    // What the pies represent.
+        console.log(winrates);
+*/
+// What the pies represent.
     var pie = d3.layout.pie()
-      .sort(null)
-      .value(function(d) { return d.winrate; }); /* what each slice represents */
+      .value(function(d){return d.matches}); /* what each slice represents */
     
     
         /* use nest() by hero to arrange each small multiple pie chart  */
@@ -352,12 +359,12 @@ var interaction = {
         heroNames.push(hero);
         }      
         console.log(heroNames);
-        
+    
         
         // Each pie for every hero id
-        var heroes = d3.nest()
-        .key(heroNames) /* Each hero or player identification. player_id */
-        .entries(data);
+      var heroes = d3.nest()
+      .key(heroNames) /* Each hero or player identification. player_id */
+      .entries(data);
     
     
      //   console.log(data["abaddon"].forEach(function(element) {return element["winrate"];}));
@@ -380,18 +387,28 @@ var interaction = {
         
         
         // add them to svg element. Format display
-      var svg = d3.select("#vis2graph").selectAll("svg")
-       .data(heroes)
-       .enter().append("svg")
-       .style("display", "inline-block")
+      var svg = d3.select("#vis2graph").append("svg")
        .attr("width", width + margin.left + margin.right)
-       .attr("height", height + margin.top + margin.bottom)
-      .append("g")
-       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-    
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+       
+    var g = svg.selectAll(".arc")
+        .data(pie(data["abaddon"]))
+    .enter().append("g")
+    .attr("class", "arc");
+        
+        g.append("path")
+            .attr("d", arc)
+        .style("fill", function(d) {return color(d.data.id)})
+        .append("title")
+        .text(function(d){return d.data.itemName + "" ;});
+        
+     //   console.log(data["abaddon"]);
+        /*
         // Create pie
         var g = svg.selectAll("g")
-            .data(function (d) {return pie(d["abaddon"].forEach(function(element){return element.winrate})) /* pie(d. % item_win_rate)  */ ; })
+            .data(function (d) {return pie(d["abaddon"].forEach(function(element){return element.winrate})) ; })
             .enter().append("svg:g");
         
         // Fill each pie based on item id, add on hover label for each pie slice.
@@ -401,7 +418,25 @@ var interaction = {
             .append("svg:title")
             .text(function(d){return d["abaddon"].forEach(function(element){return element.itemName}) + ": " + d["abaddon"].forEach(function(element){return element.winrate})});
         
+        
+        svg.selectAll("path")
+    .data(d3.layout.pie())
+  .enter().append("svg:path")
+    .attr("d", d3.svg.arc()
+    .innerRadius(radius / 2)
+    .outerRadius(radius))
+    .style("fill", function(d, i) { return color(i); });
     
+        var g = svg.selectAll("g")
+            .data(function(d) { return pie(pie.values);})
+        .enter().append("svg:g");
+        
+        g.append("svg:path")
+            .attr("d", arc)
+            .style("fill", function(d) { return color(data["abaddon"].itemName)})
+        .append("svg:title")
+            .text(function (d){ return data["abaddon"].itemName});
+        */
     
     });
 
