@@ -211,12 +211,74 @@ var interaction = {
             allPlayers = curMatch["players"];
             interaction.populateTable(allPlayers, hoverFn, offHoverFn);
 
-            // Show match # and winner
-            var $vizTitle = $("#viz1").find("h2").text("Match #" + curMatch["mID"] + " ");
-            $('<small>').text(function () {
-                if (curMatch["radiantVictory"]) return "Radiant Victory";
-                else return "Dire Victory";
-            })
+
+      // Domain function defined
+      var domainFn = function(players, property) {
+        return d3.extent(players, function(player) {
+//          console.log(player[property]);
+          return player[property];
+        });
+      };
+
+      // Helper function to strip K from gold and HD values
+      function stripK(value) {
+        return value.substring(0, value.length - 1);
+      }
+
+      // Loading data
+      d3.json("http://50.180.137.196/json/matches/490640336.json", function (curMatch) {
+        console.log("data loaded");
+        allPlayers = curMatch["players"];
+        interaction.populateTable(allPlayers, hoverFn, offHoverFn);
+
+        // Show match # and winner
+        var $vizTitle = $("#viz1").find("h2").text("Match #" + curMatch["mID"]+ " ");
+        $('<small>').text(function() {
+            if (curMatch["radiantVictory"]) return "Radiant Victory";
+            else return "Dire Victory";
+          })
+          .css("color", function() {
+            if (curMatch["radiantVictory"]) return "#61A013";
+            else return "#D6231C";
+          }).appendTo($vizTitle);
+
+        // Set domains (based on the data) for all the vertical axes
+        dimensions = d3.keys(allPlayers[0]).filter(function(property) {
+          return ((["player", "pID", "heroName", "radiant", "itemBuild"].indexOf(property) == -1) &&
+            (y[property] = d3.scale.linear().domain(domainFn.call(null, allPlayers, property)).range([h,0])));
+        });
+        x.domain(dimensions);
+
+        // Add grey lines for context
+        background = svg.append("g")
+          .attr("class", "parallelBackground")
+          .selectAll("path")
+          .data(allPlayers)
+          .enter().append("path")
+          .attr("d", path);
+
+        foreground = svg.append("g")
+          .attr("class", "parallelForeground")
+          .selectAll("path")
+          .data(allPlayers)
+          .enter().append("path")
+          .attr("stroke", function(d, i) {
+            if (allPlayers[i].radiant) return "#61A013";
+            else return "#D6231C";
+          })
+          .attr("d", path);
+
+        // Group element for each dimension/vertical axis
+        var g = svg.selectAll(".dimension")
+          .data(dimensions)
+          .enter().append("g")
+          .attr("class", "dimension")
+          .attr("transform", function(d) {return "translate(" + x(d) + ")"; })
+          .call(d3.behavior.drag()
+            .on("dragstart", function(d) {
+              dragging[d] = this.__origin__ = x(d);
+              background.attr("visibility", "hidden");
+})
                 .css("color", function () {
                     if (curMatch["radiantVictory"]) return "#61A013";
                     else return "#D6231C";
