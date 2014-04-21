@@ -4,6 +4,7 @@
 var DDgroupcount = 1;
 
 /* Creates the Drop downs for viz3 that hold the heroes' names and IDs. Creates by groups of 5 */
+
 function generateHeroDropDown() {
     var HeroFile='heroes.csv';
     var DDL = $("#groupSelectContainer");
@@ -22,8 +23,14 @@ function generateHeroDropDown() {
                                           //and cols[1] -> John Doe
                                           //and so on for the rest lines
                 $("#heroDD" + DDgroupcount + j).append("<option value='" + cols[0] + "'>" + cols[1] + "</option>").addClass("form-control");
+        //    $('#heroDD' + DDgroupcount + j).change(function () {
+  //         interaction.viz2();
+  //              });
             }
+            
         }
+        
+        
         DDgroupcount++;
     
     });
@@ -324,7 +331,7 @@ var interaction = {
     d3.json("heroItemWR/heroItemMap.json", function(data) {
        dataSet=data;
     // Document formatting
-    var margin = {top: 50, right: 0, bottom: 30, left: 50};
+    var margin = {top: 50, right: 0, bottom: 5, left: 50};
     // var width = $('#viz2').width() - margin.left - margin.right;
     // var height = $('#viz2').height() - margin.top - margin.bottom;
      
@@ -338,7 +345,7 @@ var interaction = {
         // Radius of the pies
     var arc = d3.svg.arc()
       .outerRadius(radius - 100)
-      .innerRadius(0);
+      .innerRadius(30);
         /*
         var winrates =[];
     data["abaddon"].forEach(function(entry){
@@ -355,17 +362,27 @@ var interaction = {
         /* use nest() by hero to arrange each small multiple pie chart  */
   
                 var heroNames = []
-    for (var hero in data) {
-        heroNames.push(hero);
-        }      
-        console.log(heroNames);
-    
-        
+//    for (var hero in data) {
+  //      heroNames.push(hero);
+    //    }      
+      //  console.log(heroNames);
+ //   data.forEach(
+//        function(entry){
+//            heroNames.push(entry);
+//        }
+//    );
+  
+                heroNames = d3.keys(data);
+                
+                console.log(heroNames);
         // Each pie for every hero id
       var heroes = d3.nest()
-      .key(heroNames) /* Each hero or player identification. player_id */
+      .key(function(d) {return d.heroNames;}) /* Each hero or player identification. player_id */
       .entries(data);
     
+        console.log(data);    
+        
+    //    console.log(sad);
     
      //   console.log(data["abaddon"].forEach(function(element) {return element["winrate"];}));
    //  data["abaddon"].forEach(function(element){return element["winrate"]});
@@ -386,6 +403,7 @@ var interaction = {
         
         
         
+ /*
         // add them to svg element. Format display
       var svg = d3.select("#vis2graph").append("svg")
        .attr("width", width + margin.left + margin.right)
@@ -397,12 +415,31 @@ var interaction = {
         .data(pie(data["abaddon"]))
     .enter().append("g")
     .attr("class", "arc");
+   */   
+        var svg = d3.select("#vis2graph").selectAll("svg").data(heroNames).enter().append("svg")
+        .attr("display", "inline-block")
+       .attr("width", radius)
+        .attr("height", radius + margin.top + margin.bottom)
+        
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+        
+        svg.append("svg:text")
+        .attr("text-anchor", "middle")
+        .text(function(d) { return d; });
+        
+        var g = svg.selectAll(".arc")
+        .data(function(d){return pie(data[d])})
+    .enter().append("g")
+    .attr("class", "arc");
         
         g.append("path")
             .attr("d", arc)
         .style("fill", function(d) {return color(d.data.id)})
         .append("title")
-        .text(function(d){return d.data.itemName + "" ;});
+        .text(function(d){return d.data.itemName;});
+        
+        
         
      //   console.log(data["abaddon"]);
         /*
@@ -437,7 +474,8 @@ var interaction = {
         .append("svg:title")
             .text(function (d){ return data["abaddon"].itemName});
         */
-    
+
+        
     });
 
 
@@ -488,6 +526,7 @@ var interaction = {
     
         // Add and format svg
     var svg = d3.select("#viz3graph").append("svg")
+    
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
