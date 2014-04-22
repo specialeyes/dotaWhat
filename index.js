@@ -60,162 +60,140 @@ var interaction = {
         generateHeroDropDown();
         generateHeroDropDown();
 
-        /**
-	$('.nav-sidebar li').click(function(e) {
-		var $this = $(this);
-    var $curActive = $this.siblings(".active");
-    var curActiveInd = $curActive.index();
-    var desiredInd = $this.index();
+  
+   /**
+$('.nav-sidebar li').click(function(e) {
+var $this = $(this);
+var $curActive = $this.siblings(".active");
+var curActiveInd = $curActive.index();
+var desiredInd = $this.index();
 
-		$curActive.children().css("color", "#2A6496")
-      .css("background-color", "")
-      .hover(function() {
-        $(this).css("background-color", "")},
-      function() {
-        $(this).css("background-color", "")});
-    $curActive.removeClass("active");
+$curActive.children().css("color", "#2A6496")
+.css("background-color", "")
+.hover(function() {
+$(this).css("background-color", "")},
+function() {
+$(this).css("background-color", "")});
+$curActive.removeClass("active");
 
-		$this.addClass('active');
-		$this.children().css("color", "#fff")
-      .css("background-color", "#428bca")
-      .hover(function() {
-        $(this).css("background-color", "#23537D")},
-      function(){
-        $(this).css("background-color", "#428bca")});
+$this.addClass('active');
+$this.children().css("color", "#fff")
+.css("background-color", "#428bca")
+.hover(function() {
+$(this).css("background-color", "#23537D")},
+function(){
+$(this).css("background-color", "#428bca")});
 
 
-    switch (curActiveInd + 1) {
-      case 1:
-        $("#viz1").hide();
-        break;
-      case 2:
-        $("#viz2").hide();
-        break;
-      case 3:
-        $("#viz3").hide();
-        break;
-    }
-    switch (desiredInd + 1) {
-      case 1:
-        $("#viz1").removeClass("hide").show();
-        break;
-      case 2:
-        $("#viz2").removeClass("hide").show();
-        break;
-      case 3:
-        $("#viz3").removeClass("hide").show();
-        break;
-    }
-  });
+switch (curActiveInd + 1) {
+case 1:
+$("#viz1").hide();
+break;
+case 2:
+$("#viz2").hide();
+break;
+case 3:
+$("#viz3").hide();
+break;
+}
+switch (desiredInd + 1) {
+case 1:
+$("#viz1").removeClass("hide").show();
+break;
+case 2:
+$("#viz2").removeClass("hide").show();
+break;
+case 3:
+$("#viz3").removeClass("hide").show();
+break;
+}
+});
 
 */
-    },
-    vizTitles: {
-        titles: ["Parallel Coordinates", "Second Viz", "Third Viz"],
-        subtitles: ["So cool", "what", "idk"]
+  },
+  vizTitles: {
+    titles: ["Parallel Coordinates", "Second Viz", "Third Viz"],
+    subtitles: ["So cool", "what", "idk"]
 
-    },
-    documentSizes: {
-        aspect: 1200 / 500
-    },
-    populateTable: function (players, hoverFn, offHoverFn) {
-        // Gets tbody within the table.
-        var $bodySection = $("#matchTable").find("tbody"),
-            $curEntry,
-            clickStates = [],
+  },
+  documentSizes: {
+    aspect: 1200/500
+  },
+  populateTable: function(players, hoverFn, offHoverFn) {
+    // Gets tbody within the table.
+    var $bodySection = $("#matchTable").find("tbody"),
+      $curEntry,
+      clickStates = [],
+      isClicked = false;
+
+    // For each player, creates a new row in the table
+    players.forEach(function(player) {
+      clickStates[player] = 0;
+      $curEntry = $("<tr/>")
+        .hover(function() {
+          if (!isClicked) hoverFn.call(null, player);
+        }, function() {
+          if (!isClicked) offHoverFn.call(null);
+        })
+        .click(function() {
+          if (clickStates[player] === 0 && !isClicked) {
+            isClicked = true;
+            hoverFn.call(null, player);
+            clickStates[player] = 1;
+            $(this).addClass("tableClicked");
+          }
+          else {
             isClicked = false;
-
-        // For each player, creates a new row in the table
-        players.forEach(function (player) {
             clickStates[player] = 0;
-            $curEntry = $("<tr/>")
-                .hover(function () {
-                    if (!isClicked) hoverFn.call(null, player);
-                }, function () {
-                    if (!isClicked) offHoverFn.call(null);
-                })
-                .click(function () {
-                    if (clickStates[player] === 0 && !isClicked) {
-                        isClicked = true;
-                        hoverFn.call(null, player);
-                        clickStates[player] = 1;
-                        $(this).addClass("tableClicked");
-                    } else {
-                        isClicked = false;
-                        clickStates[player] = 0;
-                        offHoverFn.call(null);
-                        $(this).removeClass("tableClicked");
-                    }
-                });
+            offHoverFn.call(null);
+            $(this).removeClass("tableClicked");
+          }
+        });
 
-            // For each property, retrieves the value for the player and appends it to the table-row element
+      // For each property, retrieves the value for the player and appends it to the table-row element
       ["heroName", "player", "lvl", "kills", "deaths", "assists", "gold",
         "lastHits", "denies", "XPM", "GPM", "HD", "HH", "TD"].forEach(function (propertyName) {
-                $curEntry.append("<td>" + player[propertyName] + "</td>");
-            });
-
-            // Adds the row to the body of the table
-            $curEntry.appendTo($bodySection);
+          $curEntry.append("<td>" + player[propertyName] + "</td>");
         });
-    },
-    viz1: function () {
-        // Document Elements
-        var targetWidth = $("#viz1graph").width();
-        var margin = {
-            top: 30,
-            right: 25,
-            bottom: 30,
-            left: 25
-        },
-            w = targetWidth - margin.right - margin.left,
-            h = (targetWidth / interaction.documentSizes.aspect) - margin.top - margin.right;
 
-        // Defining where vertical axes are going to be
-        var x = d3.scale.ordinal().rangePoints([0, w], .5),
-            y = {},
-            dragging = {};
+      // Adds the row to the body of the table
+      $curEntry.appendTo($bodySection);
+    });
+  },
+    viz1: function() {
+      // Document Elements
+      var targetWidth = $("#viz1graph").width();
+      var margin = {top: 30, right: 25, bottom: 30, left: 25},
+        w = targetWidth - margin.right - margin.left,
+        h = (targetWidth / interaction.documentSizes.aspect) - margin.top - margin.right;
 
-        // Instantiating variables
-        var line = d3.svg.line(),
-            axis = d3.svg.axis().orient("left"),
-            background,
-            foreground,
-            dimensions;
+      // Defining where vertical axes are going to be
+      var x = d3.scale.ordinal().rangePoints([0, w],.5),
+        y = {},
+        dragging = {};
 
-        // Appending SVG drawing element
-        var svg = d3.select("#viz1graph").append("svg")
-            .attr("width", w + margin.left + margin.right)
-            .attr("height", h + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+      // Instantiating variables
+      var line = d3.svg.line(),
+        axis = d3.svg.axis().orient("left"),
+        background,
+        foreground,
+        dimensions;
 
-        // Useful global (w/i viz#1) variables
-        var curMatch,
-            allPlayers = [];
+      // Appending SVG drawing element
+      var svg = d3.select("#viz1graph").append("svg")
+        .attr("width", w + margin.left + margin.right)
+        .attr("height", h + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-        // Domain function defined
-        var domainFn = function (players, property) {
-            return d3.extent(players, function (player) {
-                //          console.log(player[property]);
-                return player[property];
-            });
-        };
-
-        // Helper function to strip K from gold and HD values
-        function stripK(value) {
-            return value.substring(0, value.length - 1);
-        }
-
-        // Loading data
-        d3.json("rankedgame.json", function (curMatch) {
-            allPlayers = curMatch["players"];
-            interaction.populateTable(allPlayers, hoverFn, offHoverFn);
-
+      // Useful global (w/i viz#1) variables
+      var curMatch,
+        allPlayers = [];
 
       // Domain function defined
       var domainFn = function(players, property) {
         return d3.extent(players, function(player) {
-//          console.log(player[property]);
+// console.log(player[property]);
           return player[property];
         });
       };
@@ -278,148 +256,92 @@ var interaction = {
             .on("dragstart", function(d) {
               dragging[d] = this.__origin__ = x(d);
               background.attr("visibility", "hidden");
-})
-                .css("color", function () {
-                    if (curMatch["radiantVictory"]) return "#61A013";
-                    else return "#D6231C";
-                }).appendTo($vizTitle);
-
-            // Set domains (based on the data) for all the vertical axes
-            dimensions = d3.keys(allPlayers[0]).filter(function (property) {
-                return ((["player", "pID", "heroName", "radiant", "itemBuild"].indexOf(property) == -1) &&
-                    (y[property] = d3.scale.linear().domain(domainFn.call(null, allPlayers, property)).range([h, 0])));
-            });
-            x.domain(dimensions);
-
-            // Add grey lines for context
-            background = svg.append("g")
-                .attr("class", "parallelBackground")
-                .selectAll("path")
-                .data(allPlayers)
-                .enter().append("path")
+            })
+            .on("drag", function(d) {
+              dragging[d] = Math.min(w, Math.max(0, this.__origin__ += d3.event.dx));
+              foreground.attr("d", path);
+              dimensions.sort(function(a, b) { return position(a) - position(b); });
+              x.domain(dimensions);
+              g.attr("transform", function(d) { return "translate(" + position(d) + ")"; })
+            })
+            .on("dragend", function(d) {
+              delete this.__origin__;
+              delete dragging[d];
+              transition(d3.select(this)).attr("transform", "translate(" + x(d) + ")");
+              transition(foreground)
                 .attr("d", path);
-
-            foreground = svg.append("g")
-                .attr("class", "parallelForeground")
-                .selectAll("path")
-                .data(allPlayers)
-                .enter().append("path")
-                .attr("stroke", function (d, i) {
-                    if (allPlayers[i].radiant) return "#61A013";
-                    else return "#D6231C";
-                })
-                .attr("d", path);
-
-            // Group element for each dimension/vertical axis
-            var g = svg.selectAll(".dimension")
-                .data(dimensions)
-                .enter().append("g")
-                .attr("class", "dimension")
-                .attr("transform", function (d) {
-                    return "translate(" + x(d) + ")";
-                })
-                .call(d3.behavior.drag()
-                    .on("dragstart", function (d) {
-                        dragging[d] = this.__origin__ = x(d);
-                        background.attr("visibility", "hidden");
-                    })
-                    .on("drag", function (d) {
-                        dragging[d] = Math.min(w, Math.max(0, this.__origin__ += d3.event.dx));
-                        foreground.attr("d", path);
-                        dimensions.sort(function (a, b) {
-                            return position(a) - position(b);
-                        });
-                        x.domain(dimensions);
-                        g.attr("transform", function (d) {
-                            return "translate(" + position(d) + ")";
-                        })
-                    })
-                    .on("dragend", function (d) {
-                        delete this.__origin__;
-                        delete dragging[d];
-                        transition(d3.select(this)).attr("transform", "translate(" + x(d) + ")");
-                        transition(foreground)
-                            .attr("d", path);
-                        background
-                            .attr("d", path)
-                            .transition()
-                            .delay(500)
-                            .duration(0)
-                            .attr("visibility", null);
-                    }));
-
-            // Add axes and titles to the group elements
-            g.append("g")
-                .attr("class", "parallelAxis")
-                .each(function (d) {
-                    d3.select(this).call(axis.scale(y[d]));
-                })
-                .append("text")
-                .attr("text-anchor", "middle")
-                .attr("y", -9)
-                .text(String);
-
-            // Add and store brush for each axis.
-            g.append("g")
-                .attr("class", "parallelBrush")
-                .each(function (d) {
-                    d3.select(this).call(y[d].brush = d3.svg.brush().y(y[d]).on("brush", brush));
-                })
-                .selectAll("rect")
-                .attr("x", -8)
-                .attr("width", 16);
-        });
-
-        // Helper function for giving a position to resort based on order of axes
-        function position(d) {
-            var v = dragging[d];
-            return v == null ? x(d) : v;
-        }
-
-        // Transition function for dragging.
-        function transition(g) {
-            return g.transition().duration(500);
-        }
-
-        // Returns path for given data point
-        function path(d) {
-            return line(dimensions.map(function (p) {
-                return [x(p), y[p](d[p])];
+              background
+                .attr("d", path)
+                .transition()
+                .delay(500)
+                .duration(0)
+                .attr("visibility", null);
             }));
-        }
 
-        // Handles brush event, toggling display of foreground lines
-        function brush() {
-            var actives = dimensions.filter(function (p) {
-                return !y[p].brush.empty();
-            }),
-                extents = actives.map(function (p) {
-                    return y[p].brush.extent();
-                });
+        // Add axes and titles to the group elements
+        g.append("g")
+          .attr("class", "parallelAxis")
+          .each(function(d) { d3.select(this).call(axis.scale(y[d])); })
+          .append("text")
+          .attr("text-anchor", "middle")
+          .attr("y", -9)
+          .text(String);
 
-            foreground.style("display", function (d) {
-                return actives.every(function (p, i) {
-                    return extents[i][0] <= d[p] && d[p] <= extents[i][1];
-                }) ? null : "none";
-            });
-        }
+        // Add and store brush for each axis.
+        g.append("g")
+          .attr("class", "parallelBrush")
+          .each(function(d) {d3.select(this).call(y[d].brush = d3.svg.brush().y(y[d]).on("brush", brush));})
+          .selectAll("rect")
+          .attr("x", -8)
+          .attr("width", 16);
+      });
 
-        function hoverFn(player) {
-            foreground.style("display", function (d) {
-                if (player["heroName"] === d["heroName"]) {
-                    return null;
-                }
-                return "none";
-            });
-        }
+      // Helper function for giving a position to resort based on order of axes
+      function position(d) {
+        var v = dragging[d];
+        return v == null ? x(d) : v;
+      }
 
-        function offHoverFn() {
-            brush();
-        }
+      // Transition function for dragging.
+      function transition(g) {
+        return g.transition().duration(500);
+      }
+
+      // Returns path for given data point
+      function path(d) {
+        return line(dimensions.map(function(p) {
+          return [x(p), y[p](d[p])];
+        }));
+      }
+
+      // Handles brush event, toggling display of foreground lines
+      function brush() {
+        var actives = dimensions.filter(function(p) {return !y[p].brush.empty();}),
+          extents = actives.map(function(p) { return y[p].brush.extent(); });
+
+        foreground.style("display", function(d) {
+          return actives.every(function(p, i) {
+            return extents[i][0] <= d[p] && d[p] <= extents[i][1];
+          }) ? null : "none";
+        });
+      }
+
+      function hoverFn(player) {
+        foreground.style("display", function(d) {
+          if (player["heroName"] === d["heroName"]) {
+            return null;
+          }
+          return "none";
+        });
+      }
+
+      function offHoverFn() {
+        brush();
+      }
 
     },
-    viz2: function () {
-        /**
+    viz2: function() {
+   /**
          * Vis 2 Code
          */
         // Load data
@@ -656,122 +578,108 @@ var interaction = {
 
 
 
-
-
+        
     },
-    viz3: function () {
-        /**
-         * Vis 3 Code
-         */
-        var margin = {
-            top: 20,
-            right: 0,
-            bottom: 30,
-            left: 0
-        };
-        //  var width = $('#viz3').width() - margin.left - margin.right;
-        // height = $('#viz3').height() - margin.top - margin.bottom;
+    viz3: function() {
+    /**
+* Vis 3 Code
+*/
+   var margin = {top: 20, right: 0, bottom: 30, left: 0};
+  // var width = $('#viz3').width() - margin.left - margin.right;
+    // height = $('#viz3').height() - margin.top - margin.bottom;
+        
+     var width = 400;
+    var height = 300;
+    
+      
+   // $('#debug').text = "Vis 3 Width: " + width + " Height: " + height;
+    $('#debug').text("Vis 3 Width: " + width + " Height: " + height);
+        
+    // Display formatting
+    var x = d3.time.scale()
+    .range([0, width]);
 
-        var width = 400;
-        var height = 300;
+    var y = d3.scale.linear()
+    .range([height, 0]);
 
+    var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
 
-        //     $('#debug').text = "Vis 3 Width: " + width + " Height: " + height;
-        $('#debug').text("Vis 3 Width: " + width + " Height: " + height);
+    var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left");
 
-        // Display formatting    
-        var x = d3.time.scale()
-            .range([0, width]);
-
-        var y = d3.scale.linear()
-            .range([height, 0]);
-
-        var xAxis = d3.svg.axis()
-            .scale(x)
-            .orient("bottom");
-
-        var yAxis = d3.svg.axis()
-            .scale(y)
-            .orient("left");
-
-
-        // The line and what each axis represent    
-        var line = d3.svg.line()
-            .x(function (d) {
-                return x(d.date);
-            })
-            .y(function (d) {
-                return y(d.win_rate);
-            });
-
+        
+    // The line and what each axis represent
+    var line = d3.svg.line()
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.win_rate); });
+    
         // Add and format svg
-        var svg = d3.select("#viz3graph").append("svg")
+    var svg = d3.select("#viz3graph").append("svg")
+    
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+      
+        
+    // Load data
+      d3.json("sample.json", function(data){
+        /**
+* pull out date, champion name, win rate?
+*/
+        
+          
+          
+          
+          
+      // Domain for each axis.
+      x.domain(d3.extent(data, function(d) { return /* time? d.date */}));
+      y.domain(d3.extent(data, function(d) { return /* win rate? d.winrate */}));
+      
+      // Display x Axis and format
+    svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+    .append("text")
+      .attr("transform", "rotate(0)")
+      .attr("y", 5)
+      .attr("dy", "20px")
+      .attr("dx", "80px")
+      .style("text-anchor", "end")
+      .text("X Axis text");
 
-        .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-
-        // Load data  
-        d3.json("sample.json", function (data) {
-            /**
-             * pull out date, champion name, win rate?
-             */
-
-
-
-
-
-            // Domain for each axis. 
-            x.domain(d3.extent(data, function (d) {
-                return /* time? d.date  */
-            }));
-            y.domain(d3.extent(data, function (d) {
-                return /*  win rate? d.winrate */
-            }));
-
-            // Display x Axis and format
-            svg.append("g")
-                .attr("class", "x axis")
-                .attr("transform", "translate(0," + height + ")")
-                .call(xAxis)
-                .append("text")
-                .attr("transform", "rotate(0)")
-                .attr("y", 5)
-                .attr("dy", "20px")
-                .attr("dx", "80px")
-                .style("text-anchor", "end")
-                .text("X Axis text");
-
-            // Display y Axis and format
-            svg.append("g")
-                .attr("class", "y axis")
-                .attr("transform", "translate(6, 0)")
-                .call(yAxis)
-                .append("text")
-                .attr("transform", "rotate(-90)")
-                .attr("y", 6)
-                .attr("dy", ".71em")
-                .style("text-anchor", "end")
-                .text("Axis text");
-
-            // Display each line in the graph
-            svg.append("path")
-                .datum(data)
-                .attr("class", "line")
-                .attr("d", line);
-
-
-        });
-
-
+          // Display y Axis and format
+    svg.append("g")
+      .attr("class", "y axis")
+      .attr("transform","translate(6, 0)")
+      .call(yAxis)
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Axis text");
+      
+          // Display each line in the graph
+      svg.append("path")
+        .datum(data)
+        .attr("class","line")
+        .attr("d",line);
+      
+    
+    });
+      
+        
     }
-};
+    };
 
-$(document).ready(function () {
-    interaction.init();
-    interaction.viz1();
-    interaction.viz2();
-    interaction.viz3();
+$(document).ready(function() {
+  interaction.init();
+  interaction.viz1();
+  interaction.viz2();
+ interaction.viz3();
 });
