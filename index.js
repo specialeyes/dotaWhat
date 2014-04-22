@@ -59,57 +59,6 @@ var interaction = {
         generateHeroDropDown();
         generateHeroDropDown();
         generateHeroDropDown();
-
-  
-   /**
-$('.nav-sidebar li').click(function(e) {
-var $this = $(this);
-var $curActive = $this.siblings(".active");
-var curActiveInd = $curActive.index();
-var desiredInd = $this.index();
-
-$curActive.children().css("color", "#2A6496")
-.css("background-color", "")
-.hover(function() {
-$(this).css("background-color", "")},
-function() {
-$(this).css("background-color", "")});
-$curActive.removeClass("active");
-
-$this.addClass('active');
-$this.children().css("color", "#fff")
-.css("background-color", "#428bca")
-.hover(function() {
-$(this).css("background-color", "#23537D")},
-function(){
-$(this).css("background-color", "#428bca")});
-
-
-switch (curActiveInd + 1) {
-case 1:
-$("#viz1").hide();
-break;
-case 2:
-$("#viz2").hide();
-break;
-case 3:
-$("#viz3").hide();
-break;
-}
-switch (desiredInd + 1) {
-case 1:
-$("#viz1").removeClass("hide").show();
-break;
-case 2:
-$("#viz2").removeClass("hide").show();
-break;
-case 3:
-$("#viz3").removeClass("hide").show();
-break;
-}
-});
-
-*/
   },
   vizTitles: {
     titles: ["Parallel Coordinates", "Second Viz", "Third Viz"],
@@ -128,7 +77,7 @@ break;
 
     // For each player, creates a new row in the table
     players.forEach(function(player) {
-      clickStates[player] = 0;
+      playerClicked = null;
       $curEntry = $("<tr/>")
         .hover(function() {
           if (!isClicked) hoverFn.call(null, player);
@@ -136,15 +85,15 @@ break;
           if (!isClicked) offHoverFn.call(null);
         })
         .click(function() {
-          if (clickStates[player] === 0 && !isClicked) {
+          if (!isClicked) {
             isClicked = true;
             hoverFn.call(null, player);
-            clickStates[player] = 1;
+            playerClicked = player;
             $(this).addClass("tableClicked");
           }
-          else {
+          else if (isClicked && playerClicked === player){
             isClicked = false;
-            clickStates[player] = 0;
+            playerClicked = null;
             offHoverFn.call(null);
             $(this).removeClass("tableClicked");
           }
