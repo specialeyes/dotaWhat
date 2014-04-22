@@ -204,7 +204,7 @@ break;
       }
 
       // Loading data
-      d3.json("http://50.180.137.196/json/matches/490640336.json", function (curMatch) {
+      d3.json("rankedGame.json", function (curMatch) {
         console.log("data loaded");
         allPlayers = curMatch["players"];
         interaction.populateTable(allPlayers, hoverFn, offHoverFn);
