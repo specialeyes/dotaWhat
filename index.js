@@ -60,94 +60,45 @@ var interaction = {
         generateHeroDropDown();
         generateHeroDropDown();
 
+  },
+  vizTitles: {
+    titles: ["Parallel Coordinates", "Second Viz", "Third Viz"],
+    subtitles: ["So cool", "what", "idk"]
 
-        /**
-$('.nav-sidebar li').click(function(e) {
-var $this = $(this);
-var $curActive = $this.siblings(".active");
-var curActiveInd = $curActive.index();
-var desiredInd = $this.index();
+  },
+  documentSizes: {
+    aspect: 1200/500
+  },
+  populateTable: function(players, hoverFn, offHoverFn) {
+    // Gets tbody within the table.
+    var $bodySection = $("#matchTable").find("tbody"),
+      $curEntry,
+      clickStates = [],
+      isClicked = false;
 
-$curActive.children().css("color", "#2A6496")
-.css("background-color", "")
-.hover(function() {
-$(this).css("background-color", "")},
-function() {
-$(this).css("background-color", "")});
-$curActive.removeClass("active");
-
-$this.addClass('active');
-$this.children().css("color", "#fff")
-.css("background-color", "#428bca")
-.hover(function() {
-$(this).css("background-color", "#23537D")},
-function(){
-$(this).css("background-color", "#428bca")});
-
-
-switch (curActiveInd + 1) {
-case 1:
-$("#viz1").hide();
-break;
-case 2:
-$("#viz2").hide();
-break;
-case 3:
-$("#viz3").hide();
-break;
-}
-switch (desiredInd + 1) {
-case 1:
-$("#viz1").removeClass("hide").show();
-break;
-case 2:
-$("#viz2").removeClass("hide").show();
-break;
-case 3:
-$("#viz3").removeClass("hide").show();
-break;
-}
-});
-
-*/
-    },
-    vizTitles: {
-        titles: ["Parallel Coordinates", "Second Viz", "Third Viz"],
-        subtitles: ["So cool", "what", "idk"]
-
-    },
-    documentSizes: {
-        aspect: 1200 / 500
-    },
-    populateTable: function (players, hoverFn, offHoverFn) {
-        // Gets tbody within the table.
-        var $bodySection = $("#matchTable").find("tbody"),
-            $curEntry,
-            clickStates = [],
+    // For each player, creates a new row in the table
+    players.forEach(function(player) {
+      playerClicked = null;
+      $curEntry = $("<tr/>")
+        .hover(function() {
+          if (!isClicked) hoverFn.call(null, player);
+        }, function() {
+          if (!isClicked) offHoverFn.call(null);
+        })
+        .click(function() {
+          if (!isClicked) {
+            isClicked = true;
+            hoverFn.call(null, player);
+            playerClicked = player;
+            $(this).addClass("tableClicked");
+          }
+          else if (isClicked && playerClicked === player){
             isClicked = false;
-
-        // For each player, creates a new row in the table
-        players.forEach(function (player) {
-            clickStates[player] = 0;
-            $curEntry = $("<tr/>")
-                .hover(function () {
-                    if (!isClicked) hoverFn.call(null, player);
-                }, function () {
-                    if (!isClicked) offHoverFn.call(null);
-                })
-                .click(function () {
-                    if (clickStates[player] === 0 && !isClicked) {
-                        isClicked = true;
-                        hoverFn.call(null, player);
-                        clickStates[player] = 1;
-                        $(this).addClass("tableClicked");
-                    } else {
-                        isClicked = false;
-                        clickStates[player] = 0;
-                        offHoverFn.call(null);
-                        $(this).removeClass("tableClicked");
-                    }
-                });
+            playerClicked = null;
+            offHoverFn.call(null);
+            $(this).removeClass("tableClicked");
+          }
+        });
 
             // For each property, retrieves the value for the player and appends it to the table-row element
       ["heroName", "player", "lvl", "kills", "deaths", "assists", "gold",
@@ -202,22 +153,80 @@ break;
             });
         };
 
-        // Helper function to strip K from gold and HD values
-        function stripK(value) {
-            return value.substring(0, value.length - 1);
-        }
+      // Domain function defined
+      var domainFn = function(players, property) {
+        return d3.extent(players, function(player) {
+// console.log(player[property]);
+          return player[property];
+        });
+      };
 
-        // Loading data
-        d3.json("http://50.180.137.196/json/matches/490640336.json", function (curMatch) {
-            console.log("data loaded");
-            allPlayers = curMatch["players"];
-            interaction.populateTable(allPlayers, hoverFn, offHoverFn);
+      // Helper function to strip K from gold and HD values
+      function stripK(value) {
+        return value.substring(0, value.length - 1);
+      }
 
-            // Show match # and winner
-            var $vizTitle = $("#viz1").find("h2").text("Match #" + curMatch["mID"] + " ");
-            $('<small>').text(function () {
-                if (curMatch["radiantVictory"]) return "Radiant Victory";
-                else return "Dire Victory";
+      // Loading data
+      d3.json("rankedGame.json", function (curMatch) {
+        console.log("data loaded");
+        allPlayers = curMatch["players"];
+        interaction.populateTable(allPlayers, hoverFn, offHoverFn);
+
+        // Show match # and winner
+        var $vizTitle = $("#viz1").find("h2").text("Match #" + curMatch["mID"]+ " ");
+        $('<small>').text(function() {
+            if (curMatch["radiantVictory"]) return "Radiant Victory";
+            else return "Dire Victory";
+          })
+          .css("color", function() {
+            if (curMatch["radiantVictory"]) return "#61A013";
+            else return "#D6231C";
+          }).appendTo($vizTitle);
+
+        // Set domains (based on the data) for all the vertical axes
+        dimensions = d3.keys(allPlayers[0]).filter(function(property) {
+          return ((["player", "pID", "heroName", "radiant", "itemBuild"].indexOf(property) == -1) &&
+            (y[property] = d3.scale.linear().domain(domainFn.call(null, allPlayers, property)).range([h,0])));
+        });
+        x.domain(dimensions);
+
+        // Add grey lines for context
+        background = svg.append("g")
+          .attr("class", "parallelBackground")
+          .selectAll("path")
+          .data(allPlayers)
+          .enter().append("path")
+          .attr("d", path);
+
+        foreground = svg.append("g")
+          .attr("class", "parallelForeground")
+          .selectAll("path")
+          .data(allPlayers)
+          .enter().append("path")
+          .attr("stroke", function(d, i) {
+            if (allPlayers[i].radiant) return "#61A013";
+            else return "#D6231C";
+          })
+          .attr("d", path);
+
+        // Group element for each dimension/vertical axis
+        var g = svg.selectAll(".dimension")
+          .data(dimensions)
+          .enter().append("g")
+          .attr("class", "dimension")
+          .attr("transform", function(d) {return "translate(" + x(d) + ")"; })
+          .call(d3.behavior.drag()
+            .on("dragstart", function(d) {
+              dragging[d] = this.__origin__ = x(d);
+              background.attr("visibility", "hidden");
+            })
+            .on("drag", function(d) {
+              dragging[d] = Math.min(w, Math.max(0, this.__origin__ += d3.event.dx));
+              foreground.attr("d", path);
+              dimensions.sort(function(a, b) { return position(a) - position(b); });
+              x.domain(dimensions);
+              g.attr("transform", function(d) { return "translate(" + position(d) + ")"; })
+
             })
                 .css("color", function () {
                     if (curMatch["radiantVictory"]) return "#61A013";
