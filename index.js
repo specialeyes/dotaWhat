@@ -441,7 +441,7 @@ var interaction = {
 
                 $("#" + this.id.replaceAt(this.id.length - 1, "" + (parseInt(this.id.charAt(this.id.length - 1)) + 1))).show();
 
-
+                
                 heroNames[parseInt(this.id.charAt(this.id.length - 1)) + parseInt(this.id.charAt(this.id.length - 2)) * 5 - 1] = this.value;
 
                 d3.select("#vis2graph").selectAll("svg").remove();
@@ -643,8 +643,12 @@ var interaction = {
 
         d3.select('#vis3button').on("click", function () {
 
-
-
+            d3.select(".team1x").remove();
+            d3.select(".team2x").remove();
+            d3.select(".team3x").remove();
+            d3.select(".team4x").remove();
+            
+            
 
 
 
@@ -695,13 +699,17 @@ var interaction = {
             console.log(filename2);
             console.log(filename3);
             console.log(filename4);
-
-
+            
+            if(filename1 == ".json") filename1 = "blah.json";
+            if(filename2 == ".json") filename2 = "blah.json";
+            if(filename3 == ".json")filename3 = "blah.json";
+            if(filename4 == ".json")filename4 = "blah.json";
+            console.log(filename1);
             queue()
                 .defer(d3.json, "teamWinRates/" + filename1)
                        .defer(d3.json, "teamWinRates/" + filename2)
-            //            .defer(d3.json, "teamWinRates/" + filename3)
-            //            .defer(d3.json, "teamWinRates/" + filename4)
+                        .defer(d3.json, "teamWinRates/" + filename3)
+                        .defer(d3.json, "teamWinRates/" + filename4)
             .await(createLines);
 
 
@@ -722,7 +730,8 @@ var interaction = {
                 
                 var counter = 0;
                 var ph = [[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []];
-
+                console.log(team1["times"]);
+                if(typeof team1 != "undefined") {
                 for (var key in team1["times"][0]) {
                     if (team1["times"][0].hasOwnProperty(key)) {
                         ph[counter][0] = parseInt(key);
@@ -747,9 +756,13 @@ var interaction = {
                     .style("stroke", function (d) {
                         return color(team1);
                     })
-                    .style("fill", "none");
+                    .style("fill", "none")
+                    .append("title").classed("tooltip", true).text("Team0");
+                
+              
+                }
 
-
+                
                  counter = 0;
                  ph = [[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []];
 
@@ -775,10 +788,71 @@ var interaction = {
                         return line(d);
                     })
                     .style("stroke", function (d) {
-                        return color(team2);
+                        return color(25);
                     })
-                    .style("fill", "none");
+                    .style("fill", "none").append("title").classed("tooltip", true).text("Team1");
+                
+                
+                
+                 counter = 0;
+                 ph = [[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []];
 
+                for (var key in team3["times"][0]) {
+                    if (team3["times"][0].hasOwnProperty(key)) {
+                        ph[counter][0] = parseInt(key);
+                        ph[counter][1] = team3["times"][0][key];
+                    }
+                    console.log(counter);
+                    counter++;
+                }
+                console.log(ph);
+                var team1line = svg
+                    .selectAll(".team3x")
+                    .data([ph])
+                    .enter()
+                    .append("g")
+                    .attr("class", "team3x");
+                team1line.append("path")
+                    .attr("class", "line")
+                    .attr("d", function (d) {
+                        console.log(d);
+                        return line(d);
+                    })
+                    .style("stroke", function (d) {
+                        return color(100);
+                    })
+                    .style("fill", "none").append("title").classed("tooltip", true).text("Team2");
+                
+                
+                counter = 0;
+                 ph = [[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []];
+
+                for (var key in team4["times"][0]) {
+                    if (team4["times"][0].hasOwnProperty(key)) {
+                        ph[counter][0] = parseInt(key);
+                        ph[counter][1] = team4["times"][0][key];
+                    }
+                    console.log(counter);
+                    counter++;
+                }
+                console.log(ph);
+                var team1line = svg
+                    .selectAll(".team4x")
+                    .data([ph])
+                    .enter()
+                    .append("g")
+                    .attr("class", "team4x");
+                team1line.append("path")
+                    .attr("class", "line")
+                    .attr("d", function (d) {
+                        console.log(d);
+                        return line(d);
+                    })
+                    .style("stroke", function (d) {
+                        return color(999);
+                    })
+                    .style("fill", "none").append("title").classed("tooltip", true).text("Team3");
+                
                 
                 /*
                     var team2 = svg.selectAll(".team2.teams")
