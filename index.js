@@ -435,7 +435,9 @@ var interaction = {
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
             svg1.append("svg:text")
-                .attr("text-anchor", "middle")
+          //      .attr("text-anchor", "middle")
+            .attr("y", 70)
+            
                 .text(function (d) {
                     return d;
                 });
@@ -476,7 +478,8 @@ var interaction = {
 
                 svg1.append("svg:text")
                     .attr("text-anchor", "middle")
-                    .text(function (d) {
+                .attr("y", "60")    
+                .text(function (d) {
                         return d;
                     });
 
@@ -499,6 +502,42 @@ var interaction = {
                     .text(function (d) {
                         return "" + d.data.itemName + " Winrate: " + d.data.winrate;
                     });
+
+                g.on("mouseover", function (d) {
+                    var tempo = d3.selectAll('.arc');
+                    var tstring;
+                    var ystring;
+                    // alert("over");
+                //    console.log(tempo[0]);
+                    for (var k = 0; k < tempo.select('title')[0].length; k++) {
+                        tstring = tempo.select('title')[0][k].textContent;
+                    //    console.log(d);
+                      //  console.log(tstring);
+                        ystring = d.data["itemName"];
+
+                   //     console.log(ystring);
+                    //    console.log(tstring.substring(0, tstring.length - 15));
+                    //    console.log(tempo[0][k]);
+                        if (tstring.substring(0, tstring.length - 15) == ystring) 
+                            d3.select(tempo[0][k]).style({
+                            opacity: '1.0'
+                        });
+                        else
+                            d3.select(tempo[0][k]).style({
+                                opacity: '0.1'
+                            });
+                    }
+
+
+
+                })
+                    .on("mouseout", function (d) {
+
+                        d3.selectAll('.arc').style({
+                            opacity: '1.0'
+                        });
+
+                    })
 
 
                 console.log(heroNames);
@@ -523,11 +562,11 @@ var interaction = {
                     .y(function (d) {
                         return y(d[1]);
                     });
-                
+
                 x.domain([5, 90]);
-        y.domain([0, 100]);
-                
-                color = d3.scale.category10();
+                y.domain([0, 100]);
+
+                color = d3.scale.category20c();
 
                 console.log(d3.selectAll('.heroDropDown'));
                 d3.select(".team1x").remove();
@@ -637,7 +676,7 @@ var interaction = {
                         team1line.append("path")
                             .attr("class", "line")
                             .attr("d", function (d) {
-                                     console.log(d);
+                                console.log(d);
                                 return line(d);
                             })
                             .style("stroke", function (d) {
