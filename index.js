@@ -64,8 +64,8 @@ var interaction = {
 
     },
     vizTitles: {
-        titles: ["Parallel Coordinates", "Second Viz", "Third Viz"],
-        subtitles: ["So cool", "what", "idk"]
+        titles: ["Parallel Coordinates", "Item Popularity", "Team Combination Winrate"],
+        subtitles: ["So cool", "", ""]
 
     },
     documentSizes: {
@@ -453,12 +453,12 @@ var interaction = {
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
             svg1.append("svg:text")
-          //      .attr("text-anchor", "middle")
+            //      .attr("text-anchor", "middle")
             .attr("y", 70)
-            
-                .text(function (d) {
-                    return d;
-                });
+
+            .text(function (d) {
+                return d;
+            });
 
             var g = svg1.selectAll(".arc")
                 .data(function (d) {
@@ -476,6 +476,7 @@ var interaction = {
                 .text(function (d) {
                     return "" + d.data.itemName + " Winrate: " + d.data.winrate;
                 });
+            //     g.select("path").append("image").attr("src", function(d) { return d.data.itemImageURL});
 
             d3.selectAll('select').on("change", function (d, i) {
 
@@ -496,13 +497,14 @@ var interaction = {
 
                 svg1.append("svg:text")
                     .attr("text-anchor", "middle")
-                .attr("y", "60")    
-                .text(function (d) {
+                    .attr("y", "60")
+                    .text(function (d) {
                         return d;
                     });
 
                 //    dataCallback(data);
                 g = svg1.selectAll(".arc").data(function (d) {
+
                     if (typeof data[d] != "undefined")
                     //        console.log(data[d]);
                         return pie(data[d]);
@@ -525,25 +527,21 @@ var interaction = {
                     var tempo = d3.selectAll('.arc');
                     var tstring;
                     var ystring;
-                    // alert("over");
-                //    console.log(tempo[0]);
                     for (var k = 0; k < tempo.select('title')[0].length; k++) {
                         tstring = tempo.select('title')[0][k].textContent;
-                    //    console.log(d);
-                      //  console.log(tstring);
                         ystring = d.data["itemName"];
 
-                   //     console.log(ystring);
-                    //    console.log(tstring.substring(0, tstring.length - 15));
-                    //    console.log(tempo[0][k]);
-                        if (tstring.substring(0, tstring.length - 15) == ystring) 
+
+                        if (tstring.substring(0, tstring.length - 15) == ystring)
                             d3.select(tempo[0][k]).style({
-                            opacity: '1.0'
-                        });
+                                opacity: '1.0'
+                            });
                         else
                             d3.select(tempo[0][k]).style({
                                 opacity: '0.1'
                             });
+
+
                     }
 
 
@@ -558,7 +556,48 @@ var interaction = {
                     })
 
 
-                console.log(heroNames);
+
+                var tempcounter = 0;
+                var tempcounter2 = 0; // when 5 increase team count
+
+                var tempsvg = d3.select('#vis2graph').selectAll('svg')[0];
+                console.log(tempsvg);
+                for (var k = 0; k < tempsvg.length; k++) {
+                    if (k % 5 == 0) {
+                        tempcounter++;
+                        tempcounter2 = 0
+                    }
+                    d3.select(tempsvg[k]).attr("class", "pie" + tempcounter + "" + tempcounter2);
+                    tempcounter2++;
+
+                }
+
+
+                var tempp2 = d3.select('#vis2graph').selectAll('svg')[0];
+
+                console.log(tempp2);
+                for (var k = 0; k < tempp2.length; k++) {
+                    console.log(tempp2[k].textContent.substring(0, 10));
+                    if (tempp2[k].textContent.substring(0, 11) == "placeholder") {
+                        d3.select(tempp2[k])
+                            .style({
+                                display: "none"
+                            });
+                        // alert("found");
+                    } else {
+                        d3.select(tempp2[k])
+                            .style({
+                                display: "inline-block"
+                            });
+
+                    }
+                }
+
+
+                // Vis 2 code end
+
+
+
 
                 //alert("change!");
 
@@ -584,7 +623,7 @@ var interaction = {
                 x.domain([5, 90]);
                 y.domain([0, 100]);
 
-                color = d3.scale.category20c();
+                //        color = d3.scale.category20c();
 
                 console.log(d3.selectAll('.heroDropDown'));
                 d3.select(".team1x").remove();
@@ -684,7 +723,7 @@ var interaction = {
                             //   console.log(counter);
                             counter++;
                         }
-                        console.log(ph);
+                        //      console.log(ph);
                         var team1line = svg2
                             .selectAll(".team1x")
                             .data([ph])
@@ -698,8 +737,9 @@ var interaction = {
                                 return line(d);
                             })
                             .style("stroke", function (d) {
-                                return color(team1);
+                                return "blue";
                             })
+                            .style("stroke-width", 3)
                             .style("fill", "none")
                             .append("title").classed("tooltip", true).text("Team0");
 
@@ -718,7 +758,7 @@ var interaction = {
                         //console.log(counter);
                         counter++;
                     }
-                    console.log(ph);
+                    //          console.log(ph);
                     var team1line = svg2
                         .selectAll(".team2x")
                         .data([ph])
@@ -732,8 +772,9 @@ var interaction = {
                             return line(d);
                         })
                         .style("stroke", function (d) {
-                            return color(25);
+                            return "green";
                         })
+                        .style("stroke-width", 3)
                         .style("fill", "none").append("title").classed("tooltip", true).text("Team1");
 
 
@@ -749,7 +790,7 @@ var interaction = {
                         //console.log(counter);
                         counter++;
                     }
-                    console.log(ph);
+                    //        console.log(ph);
                     var team1line = svg2
                         .selectAll(".team3x")
                         .data([ph])
@@ -763,8 +804,9 @@ var interaction = {
                             return line(d);
                         })
                         .style("stroke", function (d) {
-                            return color(100);
+                            return "red";
                         })
+                        .style("stroke-width", 3)
                         .style("fill", "none").append("title").classed("tooltip", true).text("Team2");
 
 
@@ -779,7 +821,7 @@ var interaction = {
                         //console.log(counter);
                         counter++;
                     }
-                    console.log(ph);
+                    //  console.log(ph);
                     var team1line = svg2
                         .selectAll(".team4x")
                         .data([ph])
@@ -793,72 +835,104 @@ var interaction = {
                             return line(d);
                         })
                         .style("stroke", function (d) {
-                            return color(999);
+                            return "black";
                         })
+                        .style("stroke-width", 3)
                         .style("fill", "none").append("title").classed("tooltip", true).text("Team3");
 
 
-                    /*
-                    var team2 = svg.selectAll(".team2.teams")
-                        .data(team2)
-                        .enter().append("g")
-                        .attr("class", "team2 teams");
+
+                    d3.selectAll('.line').on("click", function () {
+
+                        console.log(this);
+                        var tempp = d3.selectAll('.line')[0];
+                        for (var n = 0; n < tempp.length; n++) {
+                            d3.select(tempp[n]).style({
+                                opacity: 0.2
+                            });
+
+                        }
+                        d3.select(this).style({
+                            opacity: 1.0
+                        });
+
+                        var tempp2 = d3.select('#vis2graph').selectAll('svg')[0];
+                        var tempString = d3.select(this).select('title')[0][0].innerHTML;
+
+                        console.log(tempp2);
+                        for (var k = 0; k < tempp2.length; k++) {
+                            if (!(parseInt(tempp2[k].classList[0].charAt(3)) == (parseInt(tempString.charAt(4)) + 1))) {
+                                d3.select(tempp2[k])
+                                    .style({
+                                        opacity: 0.2
+                                    });
+                                // alert("found");
+                            } else {
+                                d3.select(tempp2[k])
+                                    .style({
+                                        opacity: 1.0
+                                    });
+
+                            }
+                        }
 
 
-                    team2.append("path")
-                        .attr("class", "line")
-                        .attr("d", function (d) {
-                            return line(team2)
+                    });
+
+
+                    var color_hash = {
+                        0: ["Team0", "blue"],
+                        1: ["Team1", "green"],
+                        2: ["Team2", "red"],
+                        3: ["Team3", "black"]
+                    };
+                    var teamss = [0, 1, 2, 3];
+
+                    var legend = svg2.append("g")
+                        .attr("class", "legend")
+                    //.attr("x", w - 65)
+                    //.attr("y", 50)
+                    .attr("height", 100)
+                        .attr("width", 100)
+                        .attr('transform', 'translate(10,0)');
+
+                    legend.selectAll('rect')
+                        .data(teamss)
+                        .enter()
+                        .append("rect")
+                        .attr("x", 400 - 65)
+                        .attr("y", function (d, i) {
+                            return i * 17;
                         })
-                        .style("stroke", function (d) {
-                            return color(2)
+                        .attr("width", 10)
+                        .attr("height", 10)
+                        .style("fill", function (d) {
+                            var colors = color_hash[d][1];
+                            return colors;
+                        });
+
+                    legend.selectAll('text')
+                        .data(teamss)
+                        .enter()
+                        .append("text")
+                        .attr("x", 400 - 52)
+                        .attr("y", function (d, i) {
+                            return i * 17 + 9;
+                        })
+                        .text(function (d) {
+                            var text = color_hash[d][0];
+                            return text;
                         });
 
 
 
-                    var team3 = svg.selectAll(".team3.teams")
-                        .data(team3)
-                        .enter().append("g")
-                        .attr("class", "team3 teams");
-
-                    team3.append("path")
-                        .attr("class", "line")
-                        .attr("d", function (d) {
-                            return line(team3)
-                        })
-                        .style("stroke", function (d) {
-                            return color(3)
-                        });
-
-
-                    var team4 = svg.selectAll(".team4.teams")
-                        .data(team4)
-                        .enter().append("g")
-                        .attr("class", "team4 teams");
-
-                    team4.append("path")
-                        .attr("class", "line")
-                        .attr("d", function (d) {
-                            return line(team4)
-                        })
-                        .style("stroke", function (d) {
-                            return color(4)
-                        });
-
-*/
-
-                }
-
+                };
             });
 
 
 
 
         });
-
-
-
-
 
 
 
@@ -882,7 +956,7 @@ var interaction = {
 
 
         // $('#debug').text = "Vis 3 Width: " + width + " Height: " + height;
-        $('#debug').text("Vis 3 Width: " + width + " Height: " + height);
+       // $('#debug').text("Vis 3 Width: " + width + " Height: " + height);
 
         // Display formatting
         var x = d3.scale.linear()
@@ -899,7 +973,7 @@ var interaction = {
             .scale(y)
             .orient("left");
 
-        var color = d3.scale.category10();
+        //      var color = d3.scale.category10();
 
         // The line and what each axis represent
         var line = d3.svg.line()
