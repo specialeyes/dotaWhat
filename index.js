@@ -3,6 +3,8 @@
  */
 var DDgroupcount = 0;
 var heroNames = [];
+var svg1;
+var svg2;
 
 /* Creates the Drop downs for viz3 that hold the heroes' names and IDs. Creates by groups of 5 */
 
@@ -60,234 +62,252 @@ var interaction = {
         generateHeroDropDown();
         generateHeroDropDown();
 
-  },
-  vizTitles: {
-    titles: ["Parallel Coordinates", "Second Viz", "Third Viz"],
-    subtitles: ["So cool", "what", "idk"]
+    },
+    vizTitles: {
+        titles: ["Parallel Coordinates", "Second Viz", "Third Viz"],
+        subtitles: ["So cool", "what", "idk"]
 
-  },
-  documentSizes: {
-    aspect: 1200/500
-  },
-  populateTable: function(players, hoverFn, offHoverFn) {
-    // Gets tbody within the table.
-    var $bodySection = $("#matchTable").find("tbody"),
-      $curEntry,
-      clickStates = [],
-      isClicked = false;
-
-    // For each player, creates a new row in the table
-    players.forEach(function(player) {
-      playerClicked = null;
-      $curEntry = $("<tr/>")
-        .hover(function() {
-          if (!isClicked) hoverFn.call(null, player);
-        }, function() {
-          if (!isClicked) offHoverFn.call(null);
-        })
-        .click(function() {
-          if (!isClicked) {
-            isClicked = true;
-            hoverFn.call(null, player);
-            playerClicked = player;
-            $(this).addClass("tableClicked");
-          }
-          else if (isClicked && playerClicked === player){
+    },
+    documentSizes: {
+        aspect: 1200 / 500
+    },
+    populateTable: function (players, hoverFn, offHoverFn) {
+        // Gets tbody within the table.
+        var $bodySection = $("#matchTable").find("tbody"),
+            $curEntry,
+            clickStates = [],
             isClicked = false;
-            playerClicked = null;
-            offHoverFn.call(null);
-            $(this).removeClass("tableClicked");
-          }
-        });
 
-      // For each property, retrieves the value for the player and appends it to the table-row element
+        // For each player, creates a new row in the table
+        players.forEach(function (player) {
+            playerClicked = null;
+            $curEntry = $("<tr/>")
+                .hover(function () {
+                    if (!isClicked) hoverFn.call(null, player);
+                }, function () {
+                    if (!isClicked) offHoverFn.call(null);
+                })
+                .click(function () {
+                    if (!isClicked) {
+                        isClicked = true;
+                        hoverFn.call(null, player);
+                        playerClicked = player;
+                        $(this).addClass("tableClicked");
+                    } else if (isClicked && playerClicked === player) {
+                        isClicked = false;
+                        playerClicked = null;
+                        offHoverFn.call(null);
+                        $(this).removeClass("tableClicked");
+                    }
+                });
+
+            // For each property, retrieves the value for the player and appends it to the table-row element
       ["heroName", "player", "lvl", "kills", "deaths", "assists", "gold",
         "lastHits", "denies", "XPM", "GPM", "HD", "HH", "TD"].forEach(function (propertyName) {
-          $curEntry.append("<td>" + player[propertyName] + "</td>");
+                $curEntry.append("<td>" + player[propertyName] + "</td>");
+            });
+
+            // Adds the row to the body of the table
+            $curEntry.appendTo($bodySection);
         });
+    },
+    viz1: function () {
+        // Document Elements
+        var targetWidth = $("#viz1graph").width();
+        var margin = {
+            top: 30,
+            right: 25,
+            bottom: 30,
+            left: 25
+        },
+            w = targetWidth - margin.right - margin.left,
+            h = (targetWidth / interaction.documentSizes.aspect) - margin.top - margin.right;
 
-      // Adds the row to the body of the table
-      $curEntry.appendTo($bodySection);
-    });
-  },
-    viz1: function() {
-      // Document Elements
-      var targetWidth = $("#viz1graph").width();
-      var margin = {top: 30, right: 25, bottom: 30, left: 25},
-        w = targetWidth - margin.right - margin.left,
-        h = (targetWidth / interaction.documentSizes.aspect) - margin.top - margin.right;
+        // Defining where vertical axes are going to be
+        var x = d3.scale.ordinal().rangePoints([0, w], .5),
+            y = {},
+            dragging = {};
 
-      // Defining where vertical axes are going to be
-      var x = d3.scale.ordinal().rangePoints([0, w],.5),
-        y = {},
-        dragging = {};
+        // Instantiating variables
+        var line = d3.svg.line(),
+            axis = d3.svg.axis().orient("left"),
+            background,
+            foreground,
+            dimensions;
 
-      // Instantiating variables
-      var line = d3.svg.line(),
-        axis = d3.svg.axis().orient("left"),
-        background,
-        foreground,
-        dimensions;
+        // Appending SVG drawing element
+        var svg = d3.select("#viz1graph").append("svg")
+            .attr("width", w + margin.left + margin.right)
+            .attr("height", h + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-      // Appending SVG drawing element
-      var svg = d3.select("#viz1graph").append("svg")
-        .attr("width", w + margin.left + margin.right)
-        .attr("height", h + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        // Useful global (w/i viz#1) variables
+        var curMatch,
+            allPlayers = [];
 
-      // Useful global (w/i viz#1) variables
-      var curMatch,
-        allPlayers = [];
+        // Domain function defined
+        var domainFn = function (players, property) {
+            return d3.extent(players, function (player) {
+                // console.log(player[property]);
+                return player[property];
+            });
+        };
 
-      // Domain function defined
-      var domainFn = function(players, property) {
-        return d3.extent(players, function(player) {
-// console.log(player[property]);
-          return player[property];
-        });
-      };
+        // Helper function to strip K from gold and HD values
+        function stripK(value) {
+            return value.substring(0, value.length - 1);
+        }
 
-      // Helper function to strip K from gold and HD values
-      function stripK(value) {
-        return value.substring(0, value.length - 1);
-      }
+        // Loading data
+        d3.json("rankedGame.json", function (curMatch) {
+            console.log("data loaded");
+            allPlayers = curMatch["players"];
+            interaction.populateTable(allPlayers, hoverFn, offHoverFn);
 
-      // Loading data
-      d3.json("rankedGame.json", function (curMatch) {
-        console.log("data loaded");
-        allPlayers = curMatch["players"];
-        interaction.populateTable(allPlayers, hoverFn, offHoverFn);
-
-        // Show match # and winner
-        var $vizTitle = $("#viz1").find("h2").text("Match #" + curMatch["mID"]+ " ");
-        $('<small>').text(function() {
-            if (curMatch["radiantVictory"]) return "Radiant Victory";
-            else return "Dire Victory";
-          })
-          .css("color", function() {
-            if (curMatch["radiantVictory"]) return "#61A013";
-            else return "#D6231C";
-          }).appendTo($vizTitle);
-
-        // Set domains (based on the data) for all the vertical axes
-        dimensions = d3.keys(allPlayers[0]).filter(function(property) {
-          return ((["player", "pID", "heroName", "radiant", "itemBuild"].indexOf(property) == -1) &&
-            (y[property] = d3.scale.linear().domain(domainFn.call(null, allPlayers, property)).range([h,0])));
-        });
-        x.domain(dimensions);
-
-        // Add grey lines for context
-        background = svg.append("g")
-          .attr("class", "parallelBackground")
-          .selectAll("path")
-          .data(allPlayers)
-          .enter().append("path")
-          .attr("d", path);
-
-        foreground = svg.append("g")
-          .attr("class", "parallelForeground")
-          .selectAll("path")
-          .data(allPlayers)
-          .enter().append("path")
-          .attr("stroke", function(d, i) {
-            if (allPlayers[i].radiant) return "#61A013";
-            else return "#D6231C";
-          })
-          .attr("d", path);
-
-        // Group element for each dimension/vertical axis
-        var g = svg.selectAll(".dimension")
-          .data(dimensions)
-          .enter().append("g")
-          .attr("class", "dimension")
-          .attr("transform", function(d) {return "translate(" + x(d) + ")"; })
-          .call(d3.behavior.drag()
-            .on("dragstart", function(d) {
-              dragging[d] = this.__origin__ = x(d);
-              background.attr("visibility", "hidden");
+            // Show match # and winner
+            var $vizTitle = $("#viz1").find("h2").text("Match #" + curMatch["mID"] + " ");
+            $('<small>').text(function () {
+                if (curMatch["radiantVictory"]) return "Radiant Victory";
+                else return "Dire Victory";
             })
-            .on("drag", function(d) {
-              dragging[d] = Math.min(w, Math.max(0, this.__origin__ += d3.event.dx));
-              foreground.attr("d", path);
-              dimensions.sort(function(a, b) { return position(a) - position(b); });
-              x.domain(dimensions);
-              g.attr("transform", function(d) { return "translate(" + position(d) + ")"; })
-            })
-            .on("dragend", function(d) {
-              delete this.__origin__;
-              delete dragging[d];
-              transition(d3.select(this)).attr("transform", "translate(" + x(d) + ")");
-              transition(foreground)
+                .css("color", function () {
+                    if (curMatch["radiantVictory"]) return "#61A013";
+                    else return "#D6231C";
+                }).appendTo($vizTitle);
+
+            // Set domains (based on the data) for all the vertical axes
+            dimensions = d3.keys(allPlayers[0]).filter(function (property) {
+                return ((["player", "pID", "heroName", "radiant", "itemBuild"].indexOf(property) == -1) &&
+                    (y[property] = d3.scale.linear().domain(domainFn.call(null, allPlayers, property)).range([h, 0])));
+            });
+            x.domain(dimensions);
+
+            // Add grey lines for context
+            background = svg.append("g")
+                .attr("class", "parallelBackground")
+                .selectAll("path")
+                .data(allPlayers)
+                .enter().append("path")
                 .attr("d", path);
-              background
-                .attr("d", path)
-                .transition()
-                .delay(500)
-                .duration(0)
-                .attr("visibility", null);
+
+            foreground = svg.append("g")
+                .attr("class", "parallelForeground")
+                .selectAll("path")
+                .data(allPlayers)
+                .enter().append("path")
+                .attr("stroke", function (d, i) {
+                    if (allPlayers[i].radiant) return "#61A013";
+                    else return "#D6231C";
+                })
+                .attr("d", path);
+
+            // Group element for each dimension/vertical axis
+            var g = svg.selectAll(".dimension")
+                .data(dimensions)
+                .enter().append("g")
+                .attr("class", "dimension")
+                .attr("transform", function (d) {
+                    return "translate(" + x(d) + ")";
+                })
+                .call(d3.behavior.drag()
+                    .on("dragstart", function (d) {
+                        dragging[d] = this.__origin__ = x(d);
+                        background.attr("visibility", "hidden");
+                    })
+                    .on("drag", function (d) {
+                        dragging[d] = Math.min(w, Math.max(0, this.__origin__ += d3.event.dx));
+                        foreground.attr("d", path);
+                        dimensions.sort(function (a, b) {
+                            return position(a) - position(b);
+                        });
+                        x.domain(dimensions);
+                        g.attr("transform", function (d) {
+                            return "translate(" + position(d) + ")";
+                        })
+                    })
+                    .on("dragend", function (d) {
+                        delete this.__origin__;
+                        delete dragging[d];
+                        transition(d3.select(this)).attr("transform", "translate(" + x(d) + ")");
+                        transition(foreground)
+                            .attr("d", path);
+                        background
+                            .attr("d", path)
+                            .transition()
+                            .delay(500)
+                            .duration(0)
+                            .attr("visibility", null);
+                    }));
+
+            // Add axes and titles to the group elements
+            g.append("g")
+                .attr("class", "parallelAxis")
+                .each(function (d) {
+                    d3.select(this).call(axis.scale(y[d]));
+                })
+                .append("text")
+                .attr("text-anchor", "middle")
+                .attr("y", -9)
+                .text(String);
+
+            // Add and store brush for each axis.
+            g.append("g")
+                .attr("class", "parallelBrush")
+                .each(function (d) {
+                    d3.select(this).call(y[d].brush = d3.svg.brush().y(y[d]).on("brush", brush));
+                })
+                .selectAll("rect")
+                .attr("x", -8)
+                .attr("width", 16);
+        });
+
+        // Helper function for giving a position to resort based on order of axes
+        function position(d) {
+            var v = dragging[d];
+            return v == null ? x(d) : v;
+        }
+
+        // Transition function for dragging.
+        function transition(g) {
+            return g.transition().duration(500);
+        }
+
+        // Returns path for given data point
+        function path(d) {
+            return line(dimensions.map(function (p) {
+                return [x(p), y[p](d[p])];
             }));
+        }
 
-        // Add axes and titles to the group elements
-        g.append("g")
-          .attr("class", "parallelAxis")
-          .each(function(d) { d3.select(this).call(axis.scale(y[d])); })
-          .append("text")
-          .attr("text-anchor", "middle")
-          .attr("y", -9)
-          .text(String);
+        // Handles brush event, toggling display of foreground lines
+        function brush() {
+            var actives = dimensions.filter(function (p) {
+                return !y[p].brush.empty();
+            }),
+                extents = actives.map(function (p) {
+                    return y[p].brush.extent();
+                });
 
-        // Add and store brush for each axis.
-        g.append("g")
-          .attr("class", "parallelBrush")
-          .each(function(d) {d3.select(this).call(y[d].brush = d3.svg.brush().y(y[d]).on("brush", brush));})
-          .selectAll("rect")
-          .attr("x", -8)
-          .attr("width", 16);
-      });
+            foreground.style("display", function (d) {
+                return actives.every(function (p, i) {
+                    return extents[i][0] <= d[p] && d[p] <= extents[i][1];
+                }) ? null : "none";
+            });
+        }
 
-      // Helper function for giving a position to resort based on order of axes
-      function position(d) {
-        var v = dragging[d];
-        return v == null ? x(d) : v;
-      }
+        function hoverFn(player) {
+            foreground.style("display", function (d) {
+                if (player["heroName"] === d["heroName"]) {
+                    return null;
+                }
+                return "none";
+            });
+        }
 
-      // Transition function for dragging.
-      function transition(g) {
-        return g.transition().duration(500);
-      }
-
-      // Returns path for given data point
-      function path(d) {
-        return line(dimensions.map(function(p) {
-          return [x(p), y[p](d[p])];
-        }));
-      }
-
-      // Handles brush event, toggling display of foreground lines
-      function brush() {
-        var actives = dimensions.filter(function(p) {return !y[p].brush.empty();}),
-          extents = actives.map(function(p) { return y[p].brush.extent(); });
-
-        foreground.style("display", function(d) {
-          return actives.every(function(p, i) {
-            return extents[i][0] <= d[p] && d[p] <= extents[i][1];
-          }) ? null : "none";
-        });
-      }
-
-      function hoverFn(player) {
-        foreground.style("display", function(d) {
-          if (player["heroName"] === d["heroName"]) {
-            return null;
-          }
-          return "none";
-        });
-      }
-
-      function offHoverFn() {
-        brush();
-      }
+        function offHoverFn() {
+            brush();
+        }
 
 
 
@@ -405,7 +425,7 @@ var interaction = {
     .enter().append("g")
     .attr("class", "arc");
    */
-            var svg = d3.select("#vis2graph").selectAll("svg")
+            svg1 = d3.select("#vis2graph").selectAll("svg")
                 .data(heroNames).enter().append("svg")
                 .attr("display", "inline-block")
                 .attr("width", radius - 15)
@@ -414,13 +434,13 @@ var interaction = {
             .append("g")
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-            svg.append("svg:text")
+            svg1.append("svg:text")
                 .attr("text-anchor", "middle")
                 .text(function (d) {
                     return d;
                 });
 
-            var g = svg.selectAll(".arc")
+            var g = svg1.selectAll(".arc")
                 .data(function (d) {
                     return pie(data[d])
                 })
@@ -434,18 +454,18 @@ var interaction = {
                 })
                 .append("title")
                 .text(function (d) {
-                    return d.data.itemName;
+                    return "" + d.data.itemName + " Winrate: " + d.data.winrate;
                 });
 
-            d3.selectAll('select').on("change", function () {
+            d3.selectAll('select').on("change", function (d, i) {
 
                 $("#" + this.id.replaceAt(this.id.length - 1, "" + (parseInt(this.id.charAt(this.id.length - 1)) + 1))).show();
 
-                
+
                 heroNames[parseInt(this.id.charAt(this.id.length - 1)) + parseInt(this.id.charAt(this.id.length - 2)) * 5 - 1] = this.value;
 
                 d3.select("#vis2graph").selectAll("svg").remove();
-                svg = d3.select("#vis2graph").selectAll("svg").data(heroNames).enter()
+                svg1 = d3.select("#vis2graph").selectAll("svg").data(heroNames).enter()
                     .append("svg")
                     .attr("display", "inline-block")
                     .attr("width", radius - 15)
@@ -454,14 +474,14 @@ var interaction = {
                 .append("g")
                     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-                svg.append("svg:text")
+                svg1.append("svg:text")
                     .attr("text-anchor", "middle")
                     .text(function (d) {
                         return d;
                     });
 
                 //    dataCallback(data);
-                g = svg.selectAll(".arc").data(function (d) {
+                g = svg1.selectAll(".arc").data(function (d) {
                     if (typeof data[d] != "undefined")
                     //        console.log(data[d]);
                         return pie(data[d]);
@@ -477,7 +497,7 @@ var interaction = {
                     })
                     .append("title")
                     .text(function (d) {
-                        return d.data.itemName;
+                        return "" + d.data.itemName + " Winrate: " + d.data.winrate;
                     });
 
 
@@ -485,41 +505,296 @@ var interaction = {
 
                 //alert("change!");
 
+
+
+                //  d3.selectAll('select').on( {
+
+
+                x = d3.scale.linear()
+                    .range([0, 390]);
+
+                y = d3.scale.linear()
+                    .range([300, 0]);
+
+                var line = d3.svg.line()
+                    .x(function (d) {
+                        return x(d[0]);
+                    })
+                    .y(function (d) {
+                        return y(d[1]);
+                    });
+                
+                x.domain([5, 90]);
+        y.domain([0, 100]);
+                
+                color = d3.scale.category10();
+
+                console.log(d3.selectAll('.heroDropDown'));
+                d3.select(".team1x").remove();
+                d3.select(".team2x").remove();
+                d3.select(".team3x").remove();
+                d3.select(".team4x").remove();
+
+
+
+
+
+                var filename1 = "";
+                var sortedHeroes = heroNames.slice(0, 5).sort();
+                //    console.log(heroNames);
+                for (var z = 0; z < 5; z++) {
+                    if (typeof sortedHeroes[z] != "undefined")
+                        filename1 = filename1 + sortedHeroes[z];
+
+
+                }
+
+                var filename2 = "";
+                sortedHeroes = heroNames.slice(5, 10).sort();
+                //    console.log(heroNames);
+                for (var z = 0; z < 5; z++) {
+                    if (typeof sortedHeroes[z] != "undefined")
+                        filename2 = filename2 + sortedHeroes[z];
+
+
+                }
+                var filename3 = "";
+                sortedHeroes = heroNames.slice(10, 15).sort();
+                //    console.log(heroNames);
+                for (var z = 0; z < 5; z++) {
+                    if (typeof sortedHeroes[z] != "undefined")
+                        filename3 = filename3 + sortedHeroes[z];
+
+
+                }
+                var filename4 = "";
+                sortedHeroes = heroNames.slice(15, 20).sort();
+                //    console.log(heroNames);
+                for (var z = 0; z < 5; z++) {
+                    if (typeof sortedHeroes[z] != "undefined")
+                        filename4 = filename4 + sortedHeroes[z];
+
+
+                }
+
+
+                filename1 = filename1 + ".json";
+                filename2 = filename2 + ".json";
+                filename3 = filename3 + ".json";
+                filename4 = filename4 + ".json";
+                console.log(filename1);
+                console.log(filename2);
+                console.log(filename3);
+                console.log(filename4);
+
+                if (filename1 == ".json") filename1 = "blah.json";
+                if (filename2 == ".json") filename2 = "blah.json";
+                if (filename3 == ".json") filename3 = "blah.json";
+                if (filename4 == ".json") filename4 = "blah.json";
+                console.log(filename1);
+                queue()
+                    .defer(d3.json, "teamWinRates/" + filename1)
+                    .defer(d3.json, "teamWinRates/" + filename2)
+                    .defer(d3.json, "teamWinRates/" + filename3)
+                    .defer(d3.json, "teamWinRates/" + filename4)
+                    .await(createLines);
+
+
+                /*
+            d3.select("#viz2graph").selectAll("svg").remove();
+                svg = d3.select("#viz3graph").selectAll("svg").data(heroNames).enter()
+                    .append("svg")
+                    .attr("width", width)
+                    .attr("height", height)
+
+                .append("g")
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            */
+
+
+                function createLines(error, team1, team2, team3, team4) {
+
+                    var counter = 0;
+                    var ph = [[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []];
+                    console.log(team1["times"]);
+                    if (typeof team1 != "undefined") {
+                        for (var key in team1["times"][0]) {
+                            if (team1["times"][0].hasOwnProperty(key)) {
+                                ph[counter][0] = parseInt(key);
+                                ph[counter][1] = team1["times"][0][key];
+                            }
+                            //   console.log(counter);
+                            counter++;
+                        }
+                        console.log(ph);
+                        var team1line = svg2
+                            .selectAll(".team1x")
+                            .data([ph])
+                            .enter()
+                            .append("g")
+                            .attr("class", "team1x");
+                        team1line.append("path")
+                            .attr("class", "line")
+                            .attr("d", function (d) {
+                                     console.log(d);
+                                return line(d);
+                            })
+                            .style("stroke", function (d) {
+                                return color(team1);
+                            })
+                            .style("fill", "none")
+                            .append("title").classed("tooltip", true).text("Team0");
+
+
+                    }
+
+
+                    counter = 0;
+                    ph = [[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []];
+
+                    for (var key in team2["times"][0]) {
+                        if (team2["times"][0].hasOwnProperty(key)) {
+                            ph[counter][0] = parseInt(key);
+                            ph[counter][1] = team2["times"][0][key];
+                        }
+                        //console.log(counter);
+                        counter++;
+                    }
+                    console.log(ph);
+                    var team1line = svg2
+                        .selectAll(".team2x")
+                        .data([ph])
+                        .enter()
+                        .append("g")
+                        .attr("class", "team2x");
+                    team1line.append("path")
+                        .attr("class", "line")
+                        .attr("d", function (d) {
+                            //console.log(d);
+                            return line(d);
+                        })
+                        .style("stroke", function (d) {
+                            return color(25);
+                        })
+                        .style("fill", "none").append("title").classed("tooltip", true).text("Team1");
+
+
+
+                    counter = 0;
+                    ph = [[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []];
+
+                    for (var key in team3["times"][0]) {
+                        if (team3["times"][0].hasOwnProperty(key)) {
+                            ph[counter][0] = parseInt(key);
+                            ph[counter][1] = team3["times"][0][key];
+                        }
+                        //console.log(counter);
+                        counter++;
+                    }
+                    console.log(ph);
+                    var team1line = svg2
+                        .selectAll(".team3x")
+                        .data([ph])
+                        .enter()
+                        .append("g")
+                        .attr("class", "team3x");
+                    team1line.append("path")
+                        .attr("class", "line")
+                        .attr("d", function (d) {
+                            //  console.log(d);
+                            return line(d);
+                        })
+                        .style("stroke", function (d) {
+                            return color(100);
+                        })
+                        .style("fill", "none").append("title").classed("tooltip", true).text("Team2");
+
+
+                    counter = 0;
+                    ph = [[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []];
+
+                    for (var key in team4["times"][0]) {
+                        if (team4["times"][0].hasOwnProperty(key)) {
+                            ph[counter][0] = parseInt(key);
+                            ph[counter][1] = team4["times"][0][key];
+                        }
+                        //console.log(counter);
+                        counter++;
+                    }
+                    console.log(ph);
+                    var team1line = svg2
+                        .selectAll(".team4x")
+                        .data([ph])
+                        .enter()
+                        .append("g")
+                        .attr("class", "team4x");
+                    team1line.append("path")
+                        .attr("class", "line")
+                        .attr("d", function (d) {
+                            //  console.log(d);
+                            return line(d);
+                        })
+                        .style("stroke", function (d) {
+                            return color(999);
+                        })
+                        .style("fill", "none").append("title").classed("tooltip", true).text("Team3");
+
+
+                    /*
+                    var team2 = svg.selectAll(".team2.teams")
+                        .data(team2)
+                        .enter().append("g")
+                        .attr("class", "team2 teams");
+
+
+                    team2.append("path")
+                        .attr("class", "line")
+                        .attr("d", function (d) {
+                            return line(team2)
+                        })
+                        .style("stroke", function (d) {
+                            return color(2)
+                        });
+
+
+
+                    var team3 = svg.selectAll(".team3.teams")
+                        .data(team3)
+                        .enter().append("g")
+                        .attr("class", "team3 teams");
+
+                    team3.append("path")
+                        .attr("class", "line")
+                        .attr("d", function (d) {
+                            return line(team3)
+                        })
+                        .style("stroke", function (d) {
+                            return color(3)
+                        });
+
+
+                    var team4 = svg.selectAll(".team4.teams")
+                        .data(team4)
+                        .enter().append("g")
+                        .attr("class", "team4 teams");
+
+                    team4.append("path")
+                        .attr("class", "line")
+                        .attr("d", function (d) {
+                            return line(team4)
+                        })
+                        .style("stroke", function (d) {
+                            return color(4)
+                        });
+
+*/
+
+                }
+
             });
 
-            //   console.log(data["abaddon"]);
-            /*
-        // Create pie
-        var g = svg.selectAll("g")
-            .data(function (d) {return pie(d["abaddon"].forEach(function(element){return element.winrate})) ; })
-            .enter().append("svg:g");
-        
-        // Fill each pie based on item id, add on hover label for each pie slice.
-        g.append("svg:path")
-            .attr("d", arc )
-            .style("fill", function(d) { return color(d["abaddon"].id) ;})
-            .append("svg:title")
-            .text(function(d){return d["abaddon"].forEach(function(element){return element.itemName}) + ": " + d["abaddon"].forEach(function(element){return element.winrate})});
-        
-        
-        svg.selectAll("path")
-    .data(d3.layout.pie())
-  .enter().append("svg:path")
-    .attr("d", d3.svg.arc()
-    .innerRadius(radius / 2)
-    .outerRadius(radius))
-    .style("fill", function(d, i) { return color(i); });
 
-        var g = svg.selectAll("g")
-            .data(function(d) { return pie(pie.values);})
-        .enter().append("svg:g");
-        
-        g.append("svg:path")
-            .attr("d", arc)
-            .style("fill", function(d) { return color(data["abaddon"].itemName)})
-        .append("svg:title")
-            .text(function (d){ return data["abaddon"].itemName});
-        */
 
 
         });
@@ -579,7 +854,7 @@ var interaction = {
             });
 
         // Add and format svg
-        var svg = d3.select("#viz3graph").append("svg")
+        svg2 = d3.select("#viz3graph").append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
             .append("g")
@@ -607,7 +882,7 @@ var interaction = {
             }));
 */
         // Display x Axis and format
-        svg.append("g")
+        svg2.append("g")
             .attr("class", "x axis")
             .attr("transform", "translate(0," + height + ")")
             .call(xAxis)
@@ -620,7 +895,7 @@ var interaction = {
             .text("X Axis text");
 
         // Display y Axis and format
-        svg.append("g")
+        svg2.append("g")
             .attr("class", "y axis")
             .attr("transform", "translate(6, 0)")
             .call(yAxis)
@@ -641,271 +916,11 @@ var interaction = {
 
 
 
-        d3.select('#vis3button').on("click", function () {
 
-            d3.select(".team1x").remove();
-            d3.select(".team2x").remove();
-            d3.select(".team3x").remove();
-            d3.select(".team4x").remove();
-            
-            
+        //   d3.select('#vis3button').on("click", function (d, i) {
 
 
-
-            var filename1 = "";
-            var sortedHeroes = heroNames.slice(0, 5).sort();
-            //    console.log(heroNames);
-            for (var z = 0; z < 5; z++) {
-                if (typeof sortedHeroes[z] != "undefined")
-                    filename1 = filename1 + sortedHeroes[z];
-
-
-            }
-
-            var filename2 = "";
-            sortedHeroes = heroNames.slice(5, 10).sort();
-            //    console.log(heroNames);
-            for (var z = 0; z < 5; z++) {
-                if (typeof sortedHeroes[z] != "undefined")
-                    filename2 = filename2 + sortedHeroes[z];
-
-
-            }
-            var filename3 = "";
-            sortedHeroes = heroNames.slice(10, 15).sort();
-            //    console.log(heroNames);
-            for (var z = 0; z < 5; z++) {
-                if (typeof sortedHeroes[z] != "undefined")
-                    filename3 = filename3 + sortedHeroes[z];
-
-
-            }
-            var filename4 = "";
-            sortedHeroes = heroNames.slice(15, 20).sort();
-            //    console.log(heroNames);
-            for (var z = 0; z < 5; z++) {
-                if (typeof sortedHeroes[z] != "undefined")
-                    filename4 = filename4 + sortedHeroes[z];
-
-
-            }
-
-
-            filename1 = filename1 + ".json";
-            filename2 = filename2 + ".json";
-            filename3 = filename3 + ".json";
-            filename4 = filename4 + ".json";
-            console.log(filename1);
-            console.log(filename2);
-            console.log(filename3);
-            console.log(filename4);
-            
-            if(filename1 == ".json") filename1 = "blah.json";
-            if(filename2 == ".json") filename2 = "blah.json";
-            if(filename3 == ".json")filename3 = "blah.json";
-            if(filename4 == ".json")filename4 = "blah.json";
-            console.log(filename1);
-            queue()
-                .defer(d3.json, "teamWinRates/" + filename1)
-                       .defer(d3.json, "teamWinRates/" + filename2)
-                        .defer(d3.json, "teamWinRates/" + filename3)
-                        .defer(d3.json, "teamWinRates/" + filename4)
-            .await(createLines);
-
-
-            /*
-            d3.select("#viz2graph").selectAll("svg").remove();
-                svg = d3.select("#viz3graph").selectAll("svg").data(heroNames).enter()
-                    .append("svg")
-                    .attr("width", width)
-                    .attr("height", height)
-
-                .append("g")
-                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-            */
-
-
-            function createLines(error, team1, team2, team3, team4) {
-                
-                var counter = 0;
-                var ph = [[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []];
-                console.log(team1["times"]);
-                if(typeof team1 != "undefined") {
-                for (var key in team1["times"][0]) {
-                    if (team1["times"][0].hasOwnProperty(key)) {
-                        ph[counter][0] = parseInt(key);
-                        ph[counter][1] = team1["times"][0][key];
-                    }
-                    console.log(counter);
-                    counter++;
-                }
-                console.log(ph);
-                var team1line = svg
-                    .selectAll(".team1x")
-                    .data([ph])
-                    .enter()
-                    .append("g")
-                    .attr("class", "team1x");
-                team1line.append("path")
-                    .attr("class", "line")
-                    .attr("d", function (d) {
-                        console.log(d);
-                        return line(d);
-                    })
-                    .style("stroke", function (d) {
-                        return color(team1);
-                    })
-                    .style("fill", "none")
-                    .append("title").classed("tooltip", true).text("Team0");
-                
-              
-                }
-
-                
-                 counter = 0;
-                 ph = [[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []];
-
-                for (var key in team2["times"][0]) {
-                    if (team2["times"][0].hasOwnProperty(key)) {
-                        ph[counter][0] = parseInt(key);
-                        ph[counter][1] = team2["times"][0][key];
-                    }
-                    console.log(counter);
-                    counter++;
-                }
-                console.log(ph);
-                var team1line = svg
-                    .selectAll(".team2x")
-                    .data([ph])
-                    .enter()
-                    .append("g")
-                    .attr("class", "team2x");
-                team1line.append("path")
-                    .attr("class", "line")
-                    .attr("d", function (d) {
-                        console.log(d);
-                        return line(d);
-                    })
-                    .style("stroke", function (d) {
-                        return color(25);
-                    })
-                    .style("fill", "none").append("title").classed("tooltip", true).text("Team1");
-                
-                
-                
-                 counter = 0;
-                 ph = [[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []];
-
-                for (var key in team3["times"][0]) {
-                    if (team3["times"][0].hasOwnProperty(key)) {
-                        ph[counter][0] = parseInt(key);
-                        ph[counter][1] = team3["times"][0][key];
-                    }
-                    console.log(counter);
-                    counter++;
-                }
-                console.log(ph);
-                var team1line = svg
-                    .selectAll(".team3x")
-                    .data([ph])
-                    .enter()
-                    .append("g")
-                    .attr("class", "team3x");
-                team1line.append("path")
-                    .attr("class", "line")
-                    .attr("d", function (d) {
-                        console.log(d);
-                        return line(d);
-                    })
-                    .style("stroke", function (d) {
-                        return color(100);
-                    })
-                    .style("fill", "none").append("title").classed("tooltip", true).text("Team2");
-                
-                
-                counter = 0;
-                 ph = [[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []];
-
-                for (var key in team4["times"][0]) {
-                    if (team4["times"][0].hasOwnProperty(key)) {
-                        ph[counter][0] = parseInt(key);
-                        ph[counter][1] = team4["times"][0][key];
-                    }
-                    console.log(counter);
-                    counter++;
-                }
-                console.log(ph);
-                var team1line = svg
-                    .selectAll(".team4x")
-                    .data([ph])
-                    .enter()
-                    .append("g")
-                    .attr("class", "team4x");
-                team1line.append("path")
-                    .attr("class", "line")
-                    .attr("d", function (d) {
-                        console.log(d);
-                        return line(d);
-                    })
-                    .style("stroke", function (d) {
-                        return color(999);
-                    })
-                    .style("fill", "none").append("title").classed("tooltip", true).text("Team3");
-                
-                
-                /*
-                    var team2 = svg.selectAll(".team2.teams")
-                        .data(team2)
-                        .enter().append("g")
-                        .attr("class", "team2 teams");
-
-
-                    team2.append("path")
-                        .attr("class", "line")
-                        .attr("d", function (d) {
-                            return line(team2)
-                        })
-                        .style("stroke", function (d) {
-                            return color(2)
-                        });
-
-
-
-                    var team3 = svg.selectAll(".team3.teams")
-                        .data(team3)
-                        .enter().append("g")
-                        .attr("class", "team3 teams");
-
-                    team3.append("path")
-                        .attr("class", "line")
-                        .attr("d", function (d) {
-                            return line(team3)
-                        })
-                        .style("stroke", function (d) {
-                            return color(3)
-                        });
-
-
-                    var team4 = svg.selectAll(".team4.teams")
-                        .data(team4)
-                        .enter().append("g")
-                        .attr("class", "team4 teams");
-
-                    team4.append("path")
-                        .attr("class", "line")
-                        .attr("d", function (d) {
-                            return line(team4)
-                        })
-                        .style("stroke", function (d) {
-                            return color(4)
-                        });
-
-*/
-
-            }
-
-        });
+        //        });
 
 
 
