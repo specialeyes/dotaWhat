@@ -13,7 +13,7 @@ String.prototype.replaceAt = function (index, character) {
 }
 
 function generateHeroDropDown() {
-    var HeroFile = 'heroes.csv';
+    var HeroFile = 'heroes2.csv';
     var DDL = $("#groupSelectContainer");
     var suplist;
     var cols;
