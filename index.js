@@ -71,12 +71,17 @@ var interaction = {
     documentSizes: {
         aspect: 1200 / 500
     },
-    populateTable: function (players, hoverFn, offHoverFn) {
+    populateTable: function (players, heroNameMap, hoverFn, offHoverFn, isReload) {
         // Gets tbody within the table.
         var $bodySection = $("#matchTable").find("tbody"),
             $curEntry,
-            clickStates = [],
             isClicked = false;
+
+        if (isReload) {
+          $bodySection.children().remove();
+        }
+
+        console.log(heroNameMap);
 
         // For each player, creates a new row in the table
         players.forEach(function (player) {
@@ -102,7 +107,8 @@ var interaction = {
                 });
 
             // For each property, retrieves the value for the player and appends it to the table-row element
-      ["heroName", "player", "lvl", "kills", "deaths", "assists", "gold",
+            $curEntry.append("<td>" + heroNameMap[player["heroName"]] + "</td>");
+      ["player", "lvl", "kills", "deaths", "assists", "gold",
         "lastHits", "denies", "XPM", "GPM", "HD", "HH", "TD"].forEach(function (propertyName) {
                 $curEntry.append("<td>" + player[propertyName] + "</td>");
             });
@@ -111,7 +117,11 @@ var interaction = {
             $curEntry.appendTo($bodySection);
         });
     },
-    viz1: function () {
+    viz1: function (url, isReload) {
+        if (isReload) {
+          d3.select("#viz1graph").select("svg").remove();
+        }
+
         // Document Elements
         var targetWidth = $("#viz1graph").width();
         var margin = {
@@ -133,14 +143,15 @@ var interaction = {
             axis = d3.svg.axis().orient("left"),
             background,
             foreground,
-            dimensions;
+            dimensions,
+            heroNameMap = {};
 
         // Appending SVG drawing element
         var svg = d3.select("#viz1graph").append("svg")
-            .attr("width", w + margin.left + margin.right)
-            .attr("height", h + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+          .attr("width", w + margin.left + margin.right)
+          .attr("height", h + margin.top + margin.bottom)
+          .append("g")
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
         // Useful global (w/i viz#1) variables
         var curMatch,
@@ -154,113 +165,115 @@ var interaction = {
             });
         };
 
-        // Helper function to strip K from gold and HD values
-        function stripK(value) {
-            return value.substring(0, value.length - 1);
-        }
-
         // Loading data
-        d3.json("rankedGame.json", function (curMatch) {
-            console.log("data loaded");
-            allPlayers = curMatch["players"];
-            interaction.populateTable(allPlayers, hoverFn, offHoverFn);
+      d3.json(url, function (curMatch) {
+        allPlayers = curMatch["players"];
 
-            // Show match # and winner
-            var $vizTitle = $("#viz1").find("h2").text("Match #" + curMatch["mID"] + " ");
-            $('<small>').text(function () {
-                if (curMatch["radiantVictory"]) return "Radiant Victory";
-                else return "Dire Victory";
-            })
-                .css("color", function () {
-                    if (curMatch["radiantVictory"]) return "#61A013";
-                    else return "#D6231C";
-                }).appendTo($vizTitle);
+        d3.csv("heroes.csv", function(data) {
+          data.forEach(function(hero) {
+            heroNameMap[hero["heroNameUnformatted"]] = hero["Heroes"];
+            console.log(hero);
+          });
 
-            // Set domains (based on the data) for all the vertical axes
-            dimensions = d3.keys(allPlayers[0]).filter(function (property) {
-                return ((["player", "pID", "heroName", "radiant", "itemBuild"].indexOf(property) == -1) &&
-                    (y[property] = d3.scale.linear().domain(domainFn.call(null, allPlayers, property)).range([h, 0])));
-            });
-            x.domain(dimensions);
-
-            // Add grey lines for context
-            background = svg.append("g")
-                .attr("class", "parallelBackground")
-                .selectAll("path")
-                .data(allPlayers)
-                .enter().append("path")
-                .attr("d", path);
-
-            foreground = svg.append("g")
-                .attr("class", "parallelForeground")
-                .selectAll("path")
-                .data(allPlayers)
-                .enter().append("path")
-                .attr("stroke", function (d, i) {
-                    if (allPlayers[i].radiant) return "#61A013";
-                    else return "#D6231C";
-                })
-                .attr("d", path);
-
-            // Group element for each dimension/vertical axis
-            var g = svg.selectAll(".dimension")
-                .data(dimensions)
-                .enter().append("g")
-                .attr("class", "dimension")
-                .attr("transform", function (d) {
-                    return "translate(" + x(d) + ")";
-                })
-                .call(d3.behavior.drag()
-                    .on("dragstart", function (d) {
-                        dragging[d] = this.__origin__ = x(d);
-                        background.attr("visibility", "hidden");
-                    })
-                    .on("drag", function (d) {
-                        dragging[d] = Math.min(w, Math.max(0, this.__origin__ += d3.event.dx));
-                        foreground.attr("d", path);
-                        dimensions.sort(function (a, b) {
-                            return position(a) - position(b);
-                        });
-                        x.domain(dimensions);
-                        g.attr("transform", function (d) {
-                            return "translate(" + position(d) + ")";
-                        })
-                    })
-                    .on("dragend", function (d) {
-                        delete this.__origin__;
-                        delete dragging[d];
-                        transition(d3.select(this)).attr("transform", "translate(" + x(d) + ")");
-                        transition(foreground)
-                            .attr("d", path);
-                        background
-                            .attr("d", path)
-                            .transition()
-                            .delay(500)
-                            .duration(0)
-                            .attr("visibility", null);
-                    }));
-
-            // Add axes and titles to the group elements
-            g.append("g")
-                .attr("class", "parallelAxis")
-                .each(function (d) {
-                    d3.select(this).call(axis.scale(y[d]));
-                })
-                .append("text")
-                .attr("text-anchor", "middle")
-                .attr("y", -9)
-                .text(String);
-
-            // Add and store brush for each axis.
-            g.append("g")
-                .attr("class", "parallelBrush")
-                .each(function (d) {
-                    d3.select(this).call(y[d].brush = d3.svg.brush().y(y[d]).on("brush", brush));
-                })
-                .selectAll("rect")
-                .attr("x", -8)
-                .attr("width", 16);
+          interaction.populateTable(allPlayers, heroNameMap, hoverFn, offHoverFn, isReload);
         });
+
+        // Show match # and winner
+//        var $vizTitle = $("#viz1").find("h2").text("Match #" + curMatch["mID"] + " ");
+//        $('<small>').text(function () {
+//          if (curMatch["radiantVictory"]) return "Radiant Victory";
+//          else return "Dire Victory";
+//        })
+//          .css("color", function () {
+//            if (curMatch["radiantVictory"]) return "#61A013";
+//            else return "#D6231C";
+//          }).appendTo($vizTitle);
+
+        // Set domains (based on the data) for all the vertical axes
+        dimensions = d3.keys(allPlayers[0]).filter(function (property) {
+          return ((["player", "pID", "heroName", "radiant", "itemBuild"].indexOf(property) == -1) &&
+            (y[property] = d3.scale.linear().domain(domainFn.call(null, allPlayers, property)).range([h, 0])));
+        });
+        x.domain(dimensions);
+
+        // Add grey lines for context
+        background = svg.append("g")
+          .attr("class", "parallelBackground")
+          .selectAll("path")
+          .data(allPlayers)
+          .enter().append("path")
+          .attr("d", path);
+
+        foreground = svg.append("g")
+          .attr("class", "parallelForeground")
+          .selectAll("path")
+          .data(allPlayers)
+          .enter().append("path")
+          .attr("stroke", function (d, i) {
+            if (allPlayers[i].radiant) return "#61A013";
+            else return "#D6231C";
+          })
+          .attr("d", path);
+
+        // Group element for each dimension/vertical axis
+        var g = svg.selectAll(".dimension")
+          .data(dimensions)
+          .enter().append("g")
+          .attr("class", "dimension")
+          .attr("transform", function (d) {
+            return "translate(" + x(d) + ")";
+          })
+          .call(d3.behavior.drag()
+            .on("dragstart", function (d) {
+              dragging[d] = this.__origin__ = x(d);
+              background.attr("visibility", "hidden");
+            })
+            .on("drag", function (d) {
+              dragging[d] = Math.min(w, Math.max(0, this.__origin__ += d3.event.dx));
+              foreground.attr("d", path);
+              dimensions.sort(function (a, b) {
+                return position(a) - position(b);
+              });
+              x.domain(dimensions);
+              g.attr("transform", function (d) {
+                return "translate(" + position(d) + ")";
+              })
+            })
+            .on("dragend", function (d) {
+              delete this.__origin__;
+              delete dragging[d];
+              transition(d3.select(this)).attr("transform", "translate(" + x(d) + ")");
+              transition(foreground)
+                .attr("d", path);
+              background
+                .attr("d", path)
+                .transition()
+                .delay(500)
+                .duration(0)
+                .attr("visibility", null);
+            }));
+
+        // Add axes and titles to the group elements
+        g.append("g")
+          .attr("class", "parallelAxis")
+          .each(function (d) {
+            d3.select(this).call(axis.scale(y[d]));
+          })
+          .append("text")
+          .attr("text-anchor", "middle")
+          .attr("y", -9)
+          .text(String);
+
+        // Add and store brush for each axis.
+        g.append("g")
+          .attr("class", "parallelBrush")
+          .each(function (d) {
+            d3.select(this).call(y[d].brush = d3.svg.brush().y(y[d]).on("brush", brush));
+          })
+          .selectAll("rect")
+          .attr("x", -8)
+          .attr("width", 16);
+      });
 
         // Helper function for giving a position to resort based on order of axes
         function position(d) {
@@ -311,6 +324,11 @@ var interaction = {
 
 
 
+    },
+    changeMatch: function() {
+      var matchNumber = $("#matchID").val();
+      var url = "matches/" + matchNumber + ".json";
+      interaction.viz1(url, true);
     },
     viz2: function () {
         /**
@@ -971,7 +989,7 @@ var interaction = {
 
 $(document).ready(function () {
     interaction.init();
-    interaction.viz1();
+    interaction.viz1("rankedGame.json", false);
     interaction.viz2();
     interaction.viz3();
 });

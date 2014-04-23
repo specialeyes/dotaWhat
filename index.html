@@ -17,7 +17,7 @@
                             <label for="matchID">Search by Match ID:</label>
                             <input type="text" class="form-control" id="matchID" placeholder="Enter a Match Number">
                         </div>
-                        <button type="submit" class="btn btn-default">Submit</button>
+                        <button type="button" onclick="interaction.changeMatch()" class="btn btn-default">Submit</button>
                     </form>
                     <div id="vizTeams">
                         <div id="vizTeamContainer">
@@ -72,7 +72,7 @@
                     <h2>Parallel Coordinates <small>Cool viz</small></h2>
                 </div>
                 <div id="viz1graph"></div>
-                <div class="col-md-10">
+                <div>
                     <table id="matchTable" class="table table-hover">
                         <thead>
                         <tr>
@@ -90,7 +90,6 @@
                             <th>HD</th>
                             <th>HH</th>
                             <th>TD</th>
-                            <th>Items</th>
                         </tr>
                         </thead>
                         <tbody>
