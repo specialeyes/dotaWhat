@@ -41,3 +41,7 @@
 .nav-sidebar > .active > a:hover {
     background-color: #23537D;
 }
+
+#content {
+    padding-top: 50px;
+}
