@@ -327,7 +327,7 @@ var interaction = {
     },
     changeMatch: function() {
       var matchNumber = $("#matchID").val();
-      var url = "matches/" + matchNumber + ".json";
+      var url = "http://50.180.137.196/json/matches/" + matchNumber + ".json";
       interaction.viz1(url, true);
     },
     viz2: function () {
@@ -1063,7 +1063,7 @@ var interaction = {
 
 $(document).ready(function () {
     interaction.init();
-    interaction.viz1("rankedGame.json", false);
+    interaction.viz1("http://50.180.137.196/json/matches/611858683.json", false);
     interaction.viz2();
     interaction.viz3();
 });
