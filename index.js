@@ -617,7 +617,7 @@ var interaction = {
                     })
                     .y(function (d) {
                         if (d[0] != 0)
-                            return y(d[1] / d[0]);
+                            return y((d[1] / d[0])*100);
                         return y(0);
                     });
 
@@ -1019,9 +1019,11 @@ var interaction = {
             });
 
         // Add and format svg
+       // d3.select('#viz3graph').attr('padding-left', "20px");
         svg2 = d3.select("#viz3graph").append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
+            .style({'margin-left': "15px"})
             .append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -1048,28 +1050,33 @@ var interaction = {
 */
         // Display x Axis and format
         svg2.append("g")
+            .attr("class", "y axis")
+            .attr("transform", "translate(4, 0)")
+            .call(yAxis)
+            .append("text")
+            .attr("transform", "rotate(0)")
+            .attr("y", 0)
+            .attr("dy", ".71em")
+            .attr('x', 60)
+            .style("text-anchor", "end")
+            .text("% Winrate");
+        
+        d3.selectAll('.tick').select('text').attr('x', 12);
+        
+        svg2.append("g")
             .attr("class", "x axis")
             .attr("transform", "translate(0," + height + ")")
             .call(xAxis)
             .append("text")
             .attr("transform", "rotate(0)")
             .attr("y", 5)
-            .attr("dy", "20px")
-            .attr("dx", "80px")
+            .attr("dy", "22px")
+            .attr("dx", "250px")
             .style("text-anchor", "end")
-            .text("X Axis text");
+            .text("Length of Game(Minutes)");
 
         // Display y Axis and format
-        svg2.append("g")
-            .attr("class", "y axis")
-            .attr("transform", "translate(6, 0)")
-            .call(yAxis)
-            .append("text")
-            .attr("transform", "rotate(-90)")
-            .attr("y", 6)
-            .attr("dy", ".71em")
-            .style("text-anchor", "end")
-            .text("Axis text");
+        
 
         /*
             // Display each line in the graph
