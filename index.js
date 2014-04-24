@@ -170,7 +170,8 @@ var interaction = {
         allPlayers = curMatch["players"];
 
         d3.csv("heroes.csv", function(data) {
-          data.forEach(function(hero) {
+        	console.log(data); 
+	data.forEach(function(hero) {
             heroNameMap[hero["heroNameUnformatted"]] = hero["Heroes"];
             console.log(hero);
           });
@@ -1063,7 +1064,9 @@ var interaction = {
 
 $(document).ready(function () {
     interaction.init();
-    interaction.viz1("http://50.180.137.196/json/matches/611858683.json", false);
+    
+interaction.viz1("rankedgame.json",
+false);
     interaction.viz2();
     interaction.viz3();
 });
