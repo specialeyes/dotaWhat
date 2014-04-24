@@ -177,7 +177,6 @@ var interaction = {
 
                 interaction.populateTable(allPlayers, heroNameMap, hoverFn, offHoverFn, isReload);
             });
-
             // Show match # and winner
             var $vizTitle = $("#viz1").find("h2").text("Match #" + curMatch["mID"] + " ");
             $('<small>').text(function () {
@@ -325,10 +324,10 @@ var interaction = {
 
 
     },
-    changeMatch: function () {
-        var matchNumber = $("#matchID").val();
-        var url = "matches/" + matchNumber + ".json";
-        interaction.viz1(url, true);
+    changeMatch: function() {
+      var matchNumber = $("#matchID").val();
+      var url = "http://50.180.137.196/json/matches/" + matchNumber + ".json";
+      interaction.viz1(url, true);
     },
     viz2: function () {
         /**
@@ -1098,7 +1097,9 @@ var interaction = {
 
 $(document).ready(function () {
     interaction.init();
-    interaction.viz1("rankedGame.json", false);
+    
+interaction.viz1("rankedgame.json",
+false);
     interaction.viz2();
     interaction.viz3();
 });
