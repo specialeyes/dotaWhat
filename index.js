@@ -358,14 +358,6 @@ var interaction = {
             var arc = d3.svg.arc()
                 .outerRadius(radius - 100)
                 .innerRadius(20);
-            /*
-        var winrates =[];
-    data["abaddon"].forEach(function(entry){
-      winrates.push(entry.winrate);
-        });    
-        
-        console.log(winrates);
-*/
             // What the pies represent.
             var pie = d3.layout.pie()
                 .value(function (d) {
@@ -373,32 +365,6 @@ var interaction = {
                     return d.matches;
                 }); /* what each slice represents */
 
-
-            /* use nest() by hero to arrange each small multiple pie chart  */
-
-
-            //    for (var hero in data) {
-            //      heroNames.push(hero);
-            //    }      
-            //  console.log(heroNames);
-            //   data.forEach(
-            //        function(entry){
-            //            heroNames.push(entry);
-            //        }
-            //    );
-            /*
-                var nodes = document.getElementById('groupSelectContainer').childNodes;
-        console.log(nodes);
-        for(var i=1; i<nodes.length; i++) {
-                for(var j=2; j<nodes[i].childNodes.length;j++) {
-                    heroNames.push(nodes[i].childNodes[j].value);
-                }
-            //    alert(nodes[i]);
-}
-    */
-            //    heroNames = d3.keys(data);
-
-            console.log(heroNames);
             // Each pie for every hero id
             var heroes = d3.nest()
                 .key(function (d) {
@@ -406,42 +372,7 @@ var interaction = {
                 }) /* Each hero or player identification. player_id */
                 .entries(data);
 
-            console.log(data);
 
-            //    console.log(sad);
-
-            //   console.log(data["abaddon"].forEach(function(element) {return element["winrate"];}));
-            //  data["abaddon"].forEach(function(element){return element["winrate"]});
-            //     console.log(data["abaddon"][0].winrate);
-
-            //        data["abaddon"].forEach(function(entry){
-            //        console.log(entry.winrate);
-            //        });
-            //        var asdd = []
-            //    for (var hero in data) {
-            //        asdd.push(hero);
-            //        }      
-            //       console.log(asdd);
-
-            //      data.forEach(function(element) { asdd.push(element);});
-            //        console.log(asdd);
-
-
-
-
-            /*
-        // add them to svg element. Format display
-      var svg = d3.select("#vis2graph").append("svg")
-       .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-       
-    var g = svg.selectAll(".arc")
-        .data(pie(data["abaddon"]))
-    .enter().append("g")
-    .attr("class", "arc");
-   */
             svg1 = d3.select("#vis2graph").selectAll("svg")
                 .data(heroNames).enter().append("svg")
                 .attr("display", "inline-block")
@@ -477,6 +408,7 @@ var interaction = {
                 });
             //     g.select("path").append("image").attr("src", function(d) { return d.data.itemImageURL});
 
+            // Drop down on change logic. Updates pies and line graph
             d3.selectAll('select').on("change", function (d, i) {
 
                 $("#" + this.id.replaceAt(this.id.length - 1, "" + (parseInt(this.id.charAt(this.id.length - 1)) + 1))).show();
@@ -594,17 +526,7 @@ var interaction = {
 
 
                 // Vis 2 code end
-
-
-
-
-                //alert("change!");
-
-
-
-                //  d3.selectAll('select').on( {
-
-
+                // Vis 3 start
                 x = d3.scale.linear()
                     .range([0, 390]);
 
@@ -697,19 +619,6 @@ var interaction = {
                     .await(createLines);
 
 
-                /*
-            d3.select("#viz2graph").selectAll("svg").remove();
-                svg = d3.select("#viz3graph").selectAll("svg").data(heroNames).enter()
-                    .append("svg")
-                    .attr("width", width)
-                    .attr("height", height)
-
-                .append("g")
-                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-            */
-
-
                 function createLines(error, team1, team2, team3, team4) {
 
                     var counter = 0;
@@ -725,17 +634,6 @@ var interaction = {
 
 
                     if (typeof team1 != "undefined") {
-                        /*
-                        for (var key in team1["winrates"]) {
-                            if (team1["winrates"].hasOwnProperty(key)) {
-                                ph[counter][0] = parseInt(key);
-                                ph[counter][1] = team1["winrates"][0][key];
-                            }
-                            //   console.log(counter);
-                            counter++;
-                        }
-                        */
-                        //      console.log(ph);
                         var team1line = svg2
                             .selectAll(".team1x")
                             .data([ph])
@@ -768,17 +666,6 @@ var interaction = {
                     }
 
                     console.log(team2);
-                    /*
-                    for (var key in team2["winrates"][0]) {
-                        if (team2["winrates"][0].hasOwnProperty(key)) {
-                            ph[counter][0] = parseInt(key);
-                            ph[counter][1] = team2["winrates"][0][key];
-                        }
-                        //console.log(counter);
-                        counter++;
-                    }
-                    //          console.log(ph);
-  */
 
                     var team1line = svg2
                         .selectAll(".team2x")
@@ -807,17 +694,6 @@ var interaction = {
                         ph[f - 1][2] = (f * 5);
 
                     }
-                    /*
-                    for (var key in team3["winrates"][0]) {
-                        if (team3["winrates"][0].hasOwnProperty(key)) {
-                            ph[counter][0] = parseInt(key);
-                            ph[counter][1] = team3["winrates"][0][key];
-                        }
-                        //console.log(counter);
-                        counter++;
-                    }
-                    //        console.log(ph);
-  */
                     var team1line = svg2
                         .selectAll(".team3x")
                         .data([ph])
@@ -845,17 +721,6 @@ var interaction = {
 
                     }
 
-                    /*
-                    for (var key in team4["winrates"][0]) {
-                        if (team4["winrates"][0].hasOwnProperty(key)) {
-                            ph[counter][0] = parseInt(key);
-                            ph[counter][1] = team4["winrates"][0][key];
-                        }
-                        //console.log(counter);
-                        counter++;
-                    }
-                    //  console.log(ph);
-  */
                     var team1line = svg2
                         .selectAll(".team4x")
                         .data([ph])
@@ -922,6 +787,8 @@ var interaction = {
                     };
                     var teamss = [0, 1, 2, 3];
 
+                    
+                    // create and add legend
                     var legend = svg2.append("g")
                         .attr("class", "legend")
                     //.attr("x", w - 65)
@@ -982,17 +849,10 @@ var interaction = {
             bottom: 30,
             left: 0
         };
-        // var width = $('#viz3').width() - margin.left - margin.right;
-        // height = $('#viz3').height() - margin.top - margin.bottom;
 
         var width = 400;
         var height = 300;
 
-
-        // $('#debug').text = "Vis 3 Width: " + width + " Height: " + height;
-        // $('#debug').text("Vis 3 Width: " + width + " Height: " + height);
-
-        // Display formatting
         var x = d3.scale.linear()
             .range([0, 390]);
 
@@ -1007,7 +867,6 @@ var interaction = {
             .scale(y)
             .orient("left");
 
-        //      var color = d3.scale.category10();
 
         // The line and what each axis represent
         var line = d3.svg.line()
@@ -1028,27 +887,13 @@ var interaction = {
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 
-        // Load data
-
-        /**
-         * pull out date, champion name, win rate?
-         */
-
+// range of axis
         x.domain([5, 90]);
         y.domain([0, 100]);
 
 
 
-        /*
-            // Domain for each axis.
-            x.domain(d3.extent(data, function (d) {
-                return 
-            }));
-            y.domain(d3.extent(data, function (d) {
-                return 
-            }));
-*/
-        // Display x Axis and format
+        // Display yAxis and format
         svg2.append("g")
             .attr("class", "y axis")
             .attr("transform", "translate(4, 0)")
@@ -1062,7 +907,8 @@ var interaction = {
             .text("% Winrate");
         
         d3.selectAll('.tick').select('text').attr('x', 12);
-        
+
+        // Add x axis
         svg2.append("g")
             .attr("class", "x axis")
             .attr("transform", "translate(0," + height + ")")
@@ -1074,28 +920,6 @@ var interaction = {
             .attr("dx", "250px")
             .style("text-anchor", "end")
             .text("Length of Game(Minutes)");
-
-        // Display y Axis and format
-        
-
-        /*
-            // Display each line in the graph
-            svg.append("path")
-                .datum(data)
-                .attr("class", "line")
-                .attr("d", line);
-*/
-
-
-
-
-        //   d3.select('#vis3button').on("click", function (d, i) {
-
-
-        //        });
-
-
-
 
 
 
